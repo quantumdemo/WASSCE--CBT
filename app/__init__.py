@@ -41,4 +41,8 @@ def create_app(config_class=None):
     with app.app_context():
         from app import models
 
+    # Register CLI commands
+    from app import commands
+    commands.register_commands(app)
+
     return app

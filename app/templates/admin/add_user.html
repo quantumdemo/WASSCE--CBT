@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="dashboard-container">
+    <aside class="sidebar">
+        <!-- Sidebar content -->
+        <div class="user-profile">
+            <img src="https://via.placeholder.com/40" alt="User Avatar">
+            <div><strong>Super Admin</strong><small>Admin</small></div>
+        </div>
+        <nav class="dashboard-nav">
+            <ul>
+                <li><a href="{{ url_for('main.admin_dashboard') }}">Dashboard</a></li>
+                <li class="active"><a href="{{ url_for('main.user_management') }}">User Management</a></li>
+                <li><a href="{{ url_for('main.centre_management') }}">Centre Management</a></li>
+                <li><a href="#">System Settings</a></li>
+                <li><a href="#">Audit Logs</a></li>
+            </ul>
+        </nav>
+        <div class="logout-link"><a href="{{ url_for('auth.logout') }}">Logout</a></div>
+    </aside>
+    <main class="dashboard-main">
+        <div class="dashboard-header">
+            <h1>Add New User</h1>
+            <p>Create a new user account and assign a role.</p>
+        </div>
+
+        <div class="content-panel">
+            <form action="{{ url_for('main.add_user') }}" method="post" class="add-question-form">
+                <div class="form-group">
+                    <label for="full_name">Full Name</label>
+                    <input type="text" id="full_name" name="full_name" required>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Initial Password</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                <div class="form-group">
+                    <label for="role">Role</label>
+                    <select id="role" name="role" required>
+                        <option value="student">Student</option>
+                        <option value="teacher">Teacher</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="school">School / Centre (Optional for Students)</label>
+                    <input type="text" id="school" name="school">
+                </div>
+
+                <div class="form-actions">
+                    <a href="{{ url_for('main.user_management') }}" class="button">Cancel</a>
+                    <button type="submit" class="button button-primary">Create User</button>
+                </div>
+            </form>
+        </div>
+    </main>
+</div>
+{% endblock %}

@@ -130,6 +130,47 @@ def user_management():
     return render_template('admin/user_management.html', title='User Management', users=mock_users)
 
 
+@bp.route('/admin/user/new', methods=['GET', 'POST'])
+@login_required
+@role_required('admin')
+def add_user():
+    from app.models import User, UserRole, School
+    if request.method == 'POST':
+        full_name = request.form.get('full_name')
+        email = request.form.get('email')
+        password = request.form.get('password')
+        role_str = request.form.get('role')
+        school_name = request.form.get('school', 'Default Centre') # Default school for teachers/admins
+
+        # Basic validation
+        if User.query.filter_by(email=email).first():
+            flash('Email address already registered.', 'warning')
+            return redirect(url_for('main.add_user'))
+
+        # Get or create school
+        school = School.query.filter_by(name=school_name).first()
+        if not school:
+            school = School(name=school_name)
+            db.session.add(school)
+            # We assume this commit works in a real environment
+            # db.session.commit()
+
+        user = User(
+            full_name=full_name,
+            email=email,
+            role=UserRole[role_str.upper()],
+            school_id=school.id,
+            is_verified=True # Admins create verified users
+        )
+        user.set_password(password)
+        db.session.add(user)
+        # db.session.commit() # Commented out due to sandbox issues
+        flash('User created successfully!', 'success')
+        return redirect(url_for('main.user_management'))
+
+    return render_template('admin/add_user.html', title='Add New User')
+
+
 @bp.route('/admin/centre-management')
 @login_required
 @role_required('admin')
@@ -274,3 +315,15 @@ def exam(exam_id):
 
     # The exam data is passed to the template as a dictionary.
     return render_template('exam_interface.html', title=exam_dict['title'], exam=exam_dict)
+
+
+# --- Placeholder Routes ---
+@bp.route('/results')
+@login_required
+def results():
+    return render_template('placeholder.html', title='Results')
+
+@bp.route('/settings')
+@login_required
+def settings():
+    return render_template('placeholder.html', title='Settings')

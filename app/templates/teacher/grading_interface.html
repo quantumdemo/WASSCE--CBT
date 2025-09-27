@@ -7,8 +7,8 @@
         <div class="user-profile">
             <img src="https://via.placeholder.com/40" alt="User Avatar">
             <div>
-                <strong>Mr. Adebayo</strong>
-                <small>Teacher</small>
+                <strong>{{ current_user.full_name }}</strong>
+                <small>{{ current_user.role.value.title() }}</small>
             </div>
         </div>
         <nav class="dashboard-nav">
@@ -16,8 +16,8 @@
                 <li><a href="#">Dashboard</a></li>
                 <li><a href="{{ url_for('main.question_bank') }}">Question Bank</a></li>
                 <li><a href="#">Exams</a></li>
-                <li class="active"><a href="#">Results</a></li>
-                <li><a href="#">Settings</a></li>
+                <li><a href="{{ url_for('main.results') }}">Results</a></li>
+                <li><a href="{{ url_for('main.settings') }}">Settings</a></li>
             </ul>
         </nav>
         <div class="logout-link">
