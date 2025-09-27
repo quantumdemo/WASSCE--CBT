@@ -15,8 +15,8 @@
             <ul>
                 <li><a href="#">Dashboard</a></li>
                 <li><a href="{{ url_for('main.question_bank') }}">Question Bank</a></li>
-                <li><a href="#">Exams</a></li>
-                <li><a href="{{ url_for('main.results') }}">Results</a></li>
+                <li><a href="{{ url_for('main.teacher_exams') }}">Exams</a></li>
+                <li class="active"><a href="{{ url_for('main.results') }}">Results</a></li>
                 <li><a href="{{ url_for('main.settings') }}">Settings</a></li>
             </ul>
         </nav>
