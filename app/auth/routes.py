@@ -178,7 +178,7 @@ def reset_token(token):
         password = request.form.get('password')
         user.set_password(password)
         # We will assume this commit works in a real environment
-        # db.session.commit()
+        db.session.commit()
         flash('Your password has been updated! You are now able to log in.', 'success')
         return redirect(url_for('auth.login'))
     return render_template('auth/reset_token.html', title='Reset Password')

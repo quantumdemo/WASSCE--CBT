@@ -325,6 +325,40 @@ footer {
 }
 .status-active { background-color: #28a745; }
 .status-inactive { background-color: #6c757d; }
+
+/* Add/Edit Question Form Styles */
+.add-question-form textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+    font-family: inherit;
+}
+
+.option-input {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.option-input input[type="text"] {
+    flex-grow: 1;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.option-input input[type="checkbox"],
+.option-input input[type="radio"] {
+    width: 20px;
+    height: 20px;
+}
+
+#add-option-btn {
+    margin-top: 10px;
+}
 .exam-subject {
     font-size: 0.9rem;
     color: #666;

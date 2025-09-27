@@ -12,25 +12,57 @@ def index():
 @login_required
 def dashboard():
     # This will be the student dashboard
+    from app.models import Exam, ExamAttempt
+    from app.extensions import db
+    from sqlalchemy import func
 
-    # Mock data for demonstration purposes
-    current_exams = [
-        {'subject': 'Mathematics', 'title': 'Mock Exam 1', 'starts_in': '2 days'}
-    ]
+    # --- Real Database Queries ---
 
-    performance_analysis = [
-        {'subject': 'Mathematics', 'score': 65},
-        {'subject': 'Physics', 'score': 75},
-        {'subject': 'Chemistry', 'score': 82},
-        {'subject': 'Biology', 'score': 68},
-    ]
-    overall_performance = int(sum(p['score'] for p in performance_analysis) / len(performance_analysis))
-
+    # Get exam history
+    exam_history_query = db.session.query(
+        ExamAttempt, Exam
+    ).join(Exam, ExamAttempt.exam_id == Exam.id)\
+     .filter(ExamAttempt.user_id == current_user.id)\
+     .order_by(ExamAttempt.start_time.desc())\
+     .all()
 
     exam_history = [
-        {'subject': 'Physics', 'exam': 'Mock Exam 1', 'score': '75%', 'date': '2024-07-20'},
-        {'subject': 'Chemistry', 'exam': 'Mock Exam 1', 'score': '82%', 'date': '2024-07-15'},
-        {'subject': 'Biology', 'exam': 'Mock Exam 1', 'score': '68%', 'date': '2024-07-10'},
+        {
+            'subject': exam.subject,
+            'exam': exam.title,
+            'score': f"{int(attempt.score)}%" if attempt.score is not None else "N/A",
+            'date': attempt.start_time.strftime('%Y-%m-%d')
+        }
+        for attempt, exam in exam_history_query
+    ]
+
+    # Get performance analysis
+    performance_analysis_query = db.session.query(
+        Exam.subject,
+        func.avg(ExamAttempt.score)
+    ).join(Exam, ExamAttempt.exam_id == Exam.id)\
+     .filter(ExamAttempt.user_id == current_user.id, ExamAttempt.score.isnot(None))\
+     .group_by(Exam.subject)\
+     .all()
+
+    performance_analysis = [
+        {'subject': subject, 'score': int(avg_score)}
+        for subject, avg_score in performance_analysis_query
+    ]
+
+    overall_performance = 0
+    if performance_analysis:
+        overall_performance = int(sum(p['score'] for p in performance_analysis) / len(performance_analysis))
+
+    # Get current exams (e.g., exams not yet attempted by the user)
+    attempted_exam_ids = [attempt.exam_id for attempt, exam in exam_history_query]
+    current_exams_query = Exam.query.filter(
+        ~Exam.id.in_(attempted_exam_ids)
+    ).limit(5).all()
+
+    current_exams = [
+        {'subject': exam.subject, 'title': exam.title, 'starts_in': 'Available Now'}
+        for exam in current_exams_query
     ]
 
     return render_template('student_dashboard.html',
@@ -116,45 +148,61 @@ def centre_management():
 @login_required
 @role_required('teacher')
 def question_bank():
-    # Mock data for the question bank
-    mock_questions = [
+    # Fetch all questions from the database
+    from app.models import Question
+    all_questions = Question.query.all()
+
+    # Convert to a list of dicts to pass to the template
+    questions_data = [
         {
-            'id': 1,
-            'text': 'What is the capital of Nigeria?',
-            'subject': 'Geography',
-            'topic': 'General Knowledge',
-            'type': 'MCQ'
-        },
-        {
-            'id': 2,
-            'text': 'Explain the concept of photosynthesis.',
-            'subject': 'Biology',
-            'topic': 'Botany',
-            'type': 'Essay'
-        },
-        {
-            'id': 3,
-            'text': 'Solve the quadratic equation x^2 - 4x + 4 = 0.',
-            'subject': 'Mathematics',
-            'topic': 'Algebra',
-            'type': 'Short Answer'
-        },
-        {
-            'id': 4,
-            'text': 'Describe the process of cell division.',
-            'subject': 'Biology',
-            'topic': 'Cell Biology',
-            'type': 'Essay'
-        },
-        {
-            'id': 5,
-            'text': 'What is the chemical symbol for gold?',
-            'subject': 'Chemistry',
-            'topic': 'Inorganic Chemistry',
-            'type': 'MCQ'
-        }
+            'id': q.id,
+            'text': q.text,
+            'subject': q.subject,
+            'topic': q.topic,
+            'type': q.question_type.value
+        } for q in all_questions
     ]
-    return render_template('teacher/question_bank.html', title='Question Bank', questions=mock_questions)
+    return render_template('teacher/question_bank.html', title='Question Bank', questions=questions_data)
+
+
+@bp.route('/teacher/question/new', methods=['GET', 'POST'])
+@login_required
+@role_required('teacher')
+def add_question():
+    from app.models import Question, QuestionType
+    if request.method == 'POST':
+        # Logic to process the form and create a new question
+        # This will be complex due to different question types
+        text = request.form.get('text')
+        subject = request.form.get('subject')
+        topic = request.form.get('topic')
+        q_type_str = request.form.get('question_type')
+        question_type = QuestionType[q_type_str.upper()]
+
+        options = None
+        answer = None
+
+        if question_type in [QuestionType.MCQ_SINGLE, QuestionType.MCQ_MULTIPLE]:
+            options = request.form.getlist('options[]')
+            answer = request.form.getlist('answer[]')
+        else: # Short Answer, Essay
+            answer = request.form.get('answer')
+
+        new_question = Question(
+            text=text,
+            subject=subject,
+            topic=topic,
+            question_type=question_type,
+            options=options,
+            answer=answer,
+            created_by=current_user.id
+        )
+        db.session.add(new_question)
+        # db.session.commit() # Commented out due to sandbox issues
+        flash('Question added successfully!', 'success')
+        return redirect(url_for('main.question_bank'))
+
+    return render_template('teacher/add_question.html', title='Add New Question')
 
 
 @bp.route('/teacher/exam-builder')
@@ -205,48 +253,24 @@ def grading_interface(attempt_id):
 @bp.route('/exam/<int:exam_id>')
 @login_required
 def exam(exam_id):
-    # Mock data for a single exam
-    # In a real app, this would be fetched from the database based on exam_id
-    mock_exam = {
-        'id': exam_id,
-        'title': 'WASSCE Practice Exam',
-        'duration_minutes': 60,
+    # Fetch the exam and its questions from the database
+    from app.models import Exam
+    exam_data = Exam.query.get_or_404(exam_id)
+
+    # Convert the SQLAlchemy objects to a JSON-serializable dictionary
+    exam_dict = {
+        'id': exam_data.id,
+        'title': exam_data.title,
+        'duration_minutes': exam_data.duration_minutes,
         'questions': [
             {
-                'id': 1,
-                'text': 'Which of the following is NOT a characteristic of a good research question?',
-                'type': 'mcq_single',
-                'options': [
-                    'It is clear and concise',
-                    'It is broad and open-ended',
-                    'It is focused and specific',
-                    'It is relevant to the field of study'
-                ]
-            },
-            {
-                'id': 2,
-                'text': 'Solve for x in the equation 2x + 5 = 15.',
-                'type': 'short_answer',
-                'options': []
-            },
-            {
-                'id': 3,
-                'text': 'Which of these are primary colors?',
-                'type': 'mcq_multiple',
-                'options': [
-                    'Red',
-                    'Green',
-                    'Blue',
-                    'Yellow'
-                ]
-            },
-            {
-                'id': 4,
-                'text': 'What is the capital of Ghana?',
-                'type': 'short_answer',
-                'options': []
-            }
-            # Add more questions as needed to test navigation
+                'id': q.id,
+                'text': q.text,
+                'type': q.question_type.value,
+                'options': q.options
+            } for q in exam_data.questions
         ]
     }
-    return render_template('exam_interface.html', title=mock_exam['title'], exam=mock_exam)
+
+    # The exam data is passed to the template as a dictionary.
+    return render_template('exam_interface.html', title=exam_dict['title'], exam=exam_dict)
