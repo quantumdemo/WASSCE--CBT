@@ -298,11 +298,16 @@ def exam(exam_id):
     from app.models import Exam
     exam_data = Exam.query.get_or_404(exam_id)
 
+    # Calculate initial time for display
+    duration_minutes = exam_data.duration_minutes
+    initial_hours = f"{duration_minutes // 60}".zfill(2)
+    initial_minutes = f"{duration_minutes % 60}".zfill(2)
+
     # Convert the SQLAlchemy objects to a JSON-serializable dictionary
     exam_dict = {
         'id': exam_data.id,
         'title': exam_data.title,
-        'duration_minutes': exam_data.duration_minutes,
+        'duration_minutes': duration_minutes,
         'questions': [
             {
                 'id': q.id,
@@ -314,7 +319,11 @@ def exam(exam_id):
     }
 
     # The exam data is passed to the template as a dictionary.
-    return render_template('exam_interface.html', title=exam_dict['title'], exam=exam_dict)
+    return render_template('exam_interface.html',
+                           title=exam_dict['title'],
+                           exam=exam_dict,
+                           initial_hours=initial_hours,
+                           initial_minutes=initial_minutes)
 
 
 # --- Placeholder Routes ---
