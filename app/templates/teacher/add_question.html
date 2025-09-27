@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="dashboard-container">
+    <aside class="sidebar">
+        <!-- Sidebar content -->
+        <div class="user-profile">
+            <img src="https://via.placeholder.com/40" alt="User Avatar">
+            <div><strong>Mr. Adebayo</strong><small>Teacher</small></div>
+        </div>
+        <nav class="dashboard-nav">
+            <ul>
+                <li><a href="{{ url_for('main.teacher_dashboard') }}">Dashboard</a></li>
+                <li class="active"><a href="{{ url_for('main.question_bank') }}">Question Bank</a></li>
+                <li><a href="{{ url_for('main.exam_builder') }}">Exams</a></li>
+                <li><a href="#">Results</a></li>
+                <li><a href="#">Settings</a></li>
+            </ul>
+        </nav>
+        <div class="logout-link"><a href="{{ url_for('auth.logout') }}">Logout</a></div>
+    </aside>
+    <main class="dashboard-main">
+        <div class="dashboard-header">
+            <h1>Add New Question</h1>
+            <p>Create a new question to add to the question bank.</p>
+        </div>
+
+        <div class="content-panel">
+            <form action="{{ url_for('main.add_question') }}" method="post" class="add-question-form">
+                <div class="form-group">
+                    <label for="question-text">Question Text</label>
+                    <textarea id="question-text" name="text" rows="4" required placeholder="Enter the full question text here..."></textarea>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="subject">Subject</label>
+                        <input type="text" id="subject" name="subject" required placeholder="e.g., Mathematics">
+                    </div>
+                    <div class="form-group">
+                        <label for="topic">Topic</label>
+                        <input type="text" id="topic" name="topic" required placeholder="e.g., Algebra">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="question-type">Question Type</label>
+                    <select id="question-type" name="question_type">
+                        <option value="mcq_single">Multiple Choice (Single Answer)</option>
+                        <option value="mcq_multiple">Multiple Choice (Multiple Answers)</option>
+                        <option value="short_answer">Short Answer</option>
+                        <option value="essay">Essay</option>
+                    </select>
+                </div>
+
+                <!-- Dynamic fields based on question type -->
+                <div id="mcq-options-container">
+                    <label>Options</label>
+                    <div id="options-wrapper">
+                        <div class="option-input">
+                            <input type="text" name="options[]" placeholder="Option 1">
+                            <input type="checkbox" name="answer[]" value="0" title="Mark as correct answer">
+                        </div>
+                    </div>
+                    <button type="button" id="add-option-btn" class="button">Add Option</button>
+                </div>
+
+                <div id="answer-key-container" style="display: none;">
+                    <div class="form-group">
+                        <label for="answer-key">Answer Key</label>
+                        <input type="text" id="answer-key" name="answer" placeholder="Enter the correct answer for short answer questions">
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <a href="{{ url_for('main.question_bank') }}" class="button">Cancel</a>
+                    <button type="submit" class="button button-primary">Save Question</button>
+                </div>
+            </form>
+        </div>
+    </main>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const questionTypeSelect = document.getElementById('question-type');
+    const mcqOptionsContainer = document.getElementById('mcq-options-container');
+    const answerKeyContainer = document.getElementById('answer-key-container');
+    const addOptionBtn = document.getElementById('add-option-btn');
+    const optionsWrapper = document.getElementById('options-wrapper');
+
+    function toggleFields() {
+        const selectedType = questionTypeSelect.value;
+        if (selectedType === 'mcq_single' || selectedType === 'mcq_multiple') {
+            mcqOptionsContainer.style.display = 'block';
+            answerKeyContainer.style.display = 'none';
+            // For single choice, use radio buttons for answer selection
+            const answerCheckboxes = optionsWrapper.querySelectorAll('input[type="checkbox"]');
+            answerCheckboxes.forEach(cb => {
+                cb.type = (selectedType === 'mcq_single') ? 'radio' : 'checkbox';
+            });
+        } else {
+            mcqOptionsContainer.style.display = 'none';
+            answerKeyContainer.style.display = 'block';
+        }
+    }
+
+    addOptionBtn.addEventListener('click', () => {
+        const optionCount = optionsWrapper.children.length;
+        const newOption = document.createElement('div');
+        newOption.className = 'option-input';
+        newOption.innerHTML = `
+            <input type="text" name="options[]" placeholder="Option ${optionCount + 1}">
+            <input type="${questionTypeSelect.value === 'mcq_single' ? 'radio' : 'checkbox'}" name="answer[]" value="${optionCount}" title="Mark as correct answer">
+        `;
+        optionsWrapper.appendChild(newOption);
+    });
+
+    questionTypeSelect.addEventListener('change', toggleFields);
+
+    // Initial setup
+    toggleFields();
+});
+</script>
+{% endblock %}

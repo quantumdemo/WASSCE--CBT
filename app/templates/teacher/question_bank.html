@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="dashboard-container">
+    <aside class="sidebar">
+        <!-- This would be dynamic in a real app -->
+        <div class="user-profile">
+            <img src="https://via.placeholder.com/40" alt="User Avatar">
+            <div>
+                <strong>Mr. Adebayo</strong>
+                <small>Teacher</small>
+            </div>
+        </div>
+        <nav class="dashboard-nav">
+            <ul>
+                <li><a href="#">Dashboard</a></li>
+                <li class="active"><a href="#">Question Bank</a></li>
+                <li><a href="#">Exams</a></li>
+                <li><a href="#">Results</a></li>
+                <li><a href="#">Settings</a></li>
+            </ul>
+        </nav>
+        <div class="logout-link">
+            <a href="{{ url_for('auth.logout') }}">Logout</a>
+        </div>
+    </aside>
+    <main class="dashboard-main">
+        <div class="dashboard-header">
+            <h1>Question Bank Management</h1>
+            <p>Manage your question bank effectively for WASSCE CBT practice.</p>
+        </div>
+
+        <div class="content-toolbar">
+            <div class="search-container">
+                <input type="search" placeholder="Search questions...">
+            </div>
+            <div class="filter-buttons">
+                <button class="button">Subject</button>
+                <button class="button">Topic</button>
+                <button class="button">Question Type</button>
+            </div>
+            <a href="{{ url_for('main.add_question') }}" class="button button-primary">Add New Question</a>
+        </div>
+
+        <div class="content-panel">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Question</th>
+                        <th>Subject</th>
+                        <th>Topic</th>
+                        <th>Type</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for q in questions %}
+                    <tr>
+                        <td>{{ q.text | truncate(80) }}</td>
+                        <td>{{ q.subject }}</td>
+                        <td>{{ q.topic }}</td>
+                        <td>{{ q.type }}</td>
+                        <td class="action-links">
+                            <a href="#">Edit</a> | <a href="#" class="danger-link">Delete</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </main>
+</div>
+{% endblock %}

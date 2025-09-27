@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="hero">
+    <div class="hero-content">
+        <h1>Ace Your WASSCE with EduPrep</h1>
+        <p>Prepare effectively for your WASSCE exams with our comprehensive CBT practice platform. Access a wide range of subjects, detailed resources, and personalized learning tools to boost your performance.</p>
+        <a href="{{ url_for('auth.register') }}" class="button button-primary">Get Started for Free</a>
+        <a href="#" class="button">Learn More</a>
+    </div>
+</section>
+
+<section class="features">
+    <h2>Why Choose EduPrep?</h2>
+    <p class="subtitle">EduPrep offers a unique blend of features designed to help students and teachers achieve their academic goals.</p>
+    <div class="feature-cards">
+        <div class="card">
+            <h3>For Students</h3>
+            <p>Practice with realistic CBT simulations, track your progress, and identify areas for improvement with our AI-powered feedback.</p>
+        </div>
+        <div class="card">
+            <h3>For Teachers</h3>
+            <p>Create and manage custom practice tests, monitor student performance, and provide targeted feedback effectively.</p>
+        </div>
+        <div class="card">
+            <h3>For Schools</h3>
+            <p>Integrate EduPrep into your curriculum, access detailed analytics, and empower your entire student body for success.</p>
+        </div>
+    </div>
+</section>
+{% endblock %}

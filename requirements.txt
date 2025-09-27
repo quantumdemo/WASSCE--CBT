@@ -1,0 +1,9 @@
+Flask
+Flask-SQLAlchemy
+Flask-Migrate
+Flask-Login
+Flask-Mail
+python-dotenv
+bcrypt
+gunicorn
+psycopg2-binary

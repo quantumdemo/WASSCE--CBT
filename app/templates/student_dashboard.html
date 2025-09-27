@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="dashboard-container">
+    <aside class="sidebar">
+        <div class="user-profile">
+            <img src="https://via.placeholder.com/40" alt="User Avatar">
+            <div>
+                <strong>{{ current_user.full_name }}</strong>
+                <small>Student</small>
+            </div>
+        </div>
+        <nav class="dashboard-nav">
+            <ul>
+                <li class="active"><a href="#">Dashboard</a></li>
+                <li><a href="#">Practice View</a></li>
+                <li><a href="#">Mock Exams</a></li>
+                <li><a href="#">Past Questions</a></li>
+                <li><a href="#">Resources</a></li>
+            </ul>
+        </nav>
+        <div class="logout-link">
+            <a href="{{ url_for('auth.logout') }}">Logout</a>
+        </div>
+    </aside>
+    <main class="dashboard-main">
+        <div class="dashboard-header">
+            <h1>Dashboard</h1>
+            <div class="quick-actions">
+                <div class="action-card">
+                    <h4>Practice View</h4>
+                    <p>Hone your skills</p>
+                </div>
+                <div class="action-card">
+                    <h4>Mock Exams</h4>
+                    <p>Test your knowledge</p>
+                </div>
+                <div class="action-card">
+                    <h4>Past Questions</h4>
+                    <p>Review previous exams</p>
+                </div>
+                <div class="action-card">
+                    <h4>Resources</h4>
+                    <p>Access study materials</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="dashboard-columns">
+            <div class="column-left">
+                <h2>Current Exams</h2>
+                {% for exam in current_exams %}
+                <div class="exam-card">
+                    <img src="https://via.placeholder.com/150" alt="Exam Image">
+                    <div class="exam-details">
+                        <span class="exam-subject">{{ exam.subject }}</span>
+                        <h3>{{ exam.title }}</h3>
+                        <p>Starts in {{ exam.starts_in }}</p>
+                        <a href="#" class="button button-primary">View Exam</a>
+                    </div>
+                </div>
+                {% endfor %}
+
+                <h2>Exam History</h2>
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th>Subject</th>
+                            <th>Exam</th>
+                            <th>Score</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in exam_history %}
+                        <tr>
+                            <td>{{ item.subject }}</td>
+                            <td>{{ item.exam }}</td>
+                            <td><strong>{{ item.score }}</strong></td>
+                            <td>{{ item.date }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="column-right">
+                <h2>Performance Analysis</h2>
+                <div class="performance-card">
+                    <h4>Overall Performance</h4>
+                    <div class="progress-circle">
+                        <span>{{ overall_performance }}%</span>
+                    </div>
+                    {% for p in performance %}
+                    <div class="subject-performance">
+                        <p>{{ p.subject }}</p>
+                        <div class="progress-bar">
+                            <div class="progress-bar-fill" style="width: {{ p.score }}%;"></div>
+                        </div>
+                        <span>{{ p.score }}%</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}

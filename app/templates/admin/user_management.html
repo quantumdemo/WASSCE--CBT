@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="dashboard-container">
+    <aside class="sidebar">
+        <!-- This would be dynamic in a real app -->
+        <div class="user-profile">
+            <img src="https://via.placeholder.com/40" alt="User Avatar">
+            <div>
+                <strong>Super Admin</strong>
+                <small>Admin</small>
+            </div>
+        </div>
+        <nav class="dashboard-nav">
+            <ul>
+                <li><a href="#">Dashboard</a></li>
+                <li class="active"><a href="#">User Management</a></li>
+                <li><a href="#">Centre Management</a></li>
+                <li><a href="#">System Settings</a></li>
+                <li><a href="#">Audit Logs</a></li>
+            </ul>
+        </nav>
+        <div class="logout-link">
+            <a href="{{ url_for('auth.logout') }}">Logout</a>
+        </div>
+    </aside>
+    <main class="dashboard-main">
+        <div class="dashboard-header">
+            <h1>User Management</h1>
+            <p>Manage all users across the platform.</p>
+        </div>
+
+        <div class="content-toolbar">
+            <div class="search-container">
+                <input type="search" placeholder="Search by name or email...">
+            </div>
+            <div class="filter-buttons">
+                <button class="button">Filter by Role</button>
+                <button class="button">Filter by Status</button>
+            </div>
+            <button class="button button-primary">Add New User</button>
+        </div>
+
+        <div class="content-panel">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Status</th>
+                        <th>Last Login</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr>
+                        <td>{{ user.name }}</td>
+                        <td>{{ user.email }}</td>
+                        <td>{{ user.role }}</td>
+                        <td><span class="status-badge status-{{ user.status | lower }}">{{ user.status }}</span></td>
+                        <td>{{ user.last_login }}</td>
+                        <td class="action-links">
+                            <a href="#">Edit</a> | <a href="#" class="danger-link">Delete</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </main>
+</div>
+{% endblock %}

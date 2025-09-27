@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="dashboard-container">
+    <aside class="sidebar">
+        <!-- This would be dynamic in a real app -->
+        <div class="user-profile">
+            <img src="https://via.placeholder.com/40" alt="User Avatar">
+            <div>
+                <strong>Mr. Adebayo</strong>
+                <small>Teacher</small>
+            </div>
+        </div>
+        <nav class="dashboard-nav">
+            <ul>
+                <li class="active"><a href="#">Dashboard</a></li>
+                <li><a href="{{ url_for('main.question_bank') }}">Question Bank</a></li>
+                <li><a href="#">Exams</a></li>
+                <li><a href="#">Results</a></li>
+                <li><a href="#">Settings</a></li>
+            </ul>
+        </nav>
+        <div class="logout-link">
+            <a href="{{ url_for('auth.logout') }}">Logout</a>
+        </div>
+    </aside>
+    <main class="dashboard-main">
+        <div class="dashboard-header">
+            <h1>Teacher Dashboard</h1>
+            <p>Welcome back, Mr. Adebayo</p>
+        </div>
+
+        <div class="quick-actions-grid">
+            <div class="quick-action-card">
+                <h3>Question Bank Management</h3>
+                <p>Manage all your questions</p>
+                <a href="{{ url_for('main.question_bank') }}">Go to Question Bank</a>
+            </div>
+            <div class="quick-action-card primary">
+                <h3>Exam Builder</h3>
+                <p>Create new exams</p>
+                <a href="{{ url_for('main.exam_builder') }}">Create Exam</a>
+            </div>
+            <div class="quick-action-card">
+                <h3>Grading</h3>
+                <p>Grade submitted exams</p>
+                <a href="#">Go to Grading</a>
+            </div>
+            <div class="quick-action-card">
+                <h3>Performance Analytics</h3>
+                <p>View student performance</p>
+                <a href="#">View Analytics</a>
+            </div>
+        </div>
+
+        <div class="recent-activities">
+            <h2>Recent Activities</h2>
+            <div class="activity-list">
+                {% for activity in recent_activities %}
+                <div class="activity-item">
+                    <div class="activity-icon">
+                        <!-- Placeholder icon -->
+                        <svg_icon>document</svg_icon>
+                    </div>
+                    <div class="activity-details">
+                        <strong>{{ activity.name }}</strong>
+                        <p>{{ activity.subject }}</p>
+                    </div>
+                    <div class="activity-age">
+                        {{ activity.age }}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}

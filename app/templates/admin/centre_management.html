@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="dashboard-container">
+    <aside class="sidebar">
+        <!-- This would be dynamic in a real app -->
+        <div class="user-profile">
+            <img src="https://via.placeholder.com/40" alt="User Avatar">
+            <div>
+                <strong>Super Admin</strong>
+                <small>Admin</small>
+            </div>
+        </div>
+        <nav class="dashboard-nav">
+            <ul>
+                <li><a href="{{ url_for('main.admin_dashboard') }}">Dashboard</a></li>
+                <li><a href="{{ url_for('main.user_management') }}">User Management</a></li>
+                <li class="active"><a href="#">Centre Management</a></li>
+                <li><a href="#">System Settings</a></li>
+                <li><a href="#">Audit Logs</a></li>
+            </ul>
+        </nav>
+        <div class="logout-link">
+            <a href="{{ url_for('auth.logout') }}">Logout</a>
+        </div>
+    </aside>
+    <main class="dashboard-main">
+        <div class="dashboard-header">
+            <h1>Centre Management</h1>
+            <p>Manage all registered schools and centres on the platform.</p>
+        </div>
+
+        <div class="content-toolbar">
+            <div class="search-container">
+                <input type="search" placeholder="Search by name or location...">
+            </div>
+            <button class="button button-primary">Add New Centre</button>
+        </div>
+
+        <div class="content-panel">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Centre Name</th>
+                        <th>Location</th>
+                        <th>Students</th>
+                        <th>Teachers</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for centre in centres %}
+                    <tr>
+                        <td>{{ centre.name }}</td>
+                        <td>{{ centre.location }}</td>
+                        <td>{{ centre.students }}</td>
+                        <td>{{ centre.teachers }}</td>
+                        <td class="action-links">
+                            <a href="#">Edit</a> | <a href="#" class="danger-link">Delete</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </main>
+</div>
+{% endblock %}
