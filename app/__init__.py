@@ -3,7 +3,7 @@ from flask import Flask
 from dotenv import load_dotenv
 
 # Import extensions from the new file
-from app.extensions import db, migrate, login_manager
+from app.extensions import db, migrate, login_manager, mail
 
 load_dotenv()
 
@@ -12,15 +12,19 @@ def create_app(config_class=None):
 
     # Load configuration
     app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'a_default_secret_key')
-    # Use an absolute path for the SQLite database to avoid ambiguity
     basedir = os.path.abspath(os.path.dirname(__file__))
     app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///' + os.path.join(basedir, '..', 'site.db'))
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+    # Email configuration
+    app.config['MAIL_SUPPRESS_SEND'] = True
+    app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('MAIL_DEFAULT_SENDER', 'noreply@eduprep.com')
 
     # Initialize extensions with the app
     db.init_app(app)
     migrate.init_app(app, db)
     login_manager.init_app(app)
+    mail.init_app(app)
 
     # Register blueprints
     from app.auth import bp as auth_bp

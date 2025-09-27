@@ -1,6 +1,8 @@
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 from app.extensions import db, login_manager
+from itsdangerous.url_safe import URLSafeTimedSerializer
+from flask import current_app
 import enum
 
 @login_manager.user_loader
@@ -27,12 +29,28 @@ class User(UserMixin, db.Model):
     password_hash = db.Column(db.String(128))
     role = db.Column(db.Enum(UserRole), default=UserRole.STUDENT, nullable=False)
     school_id = db.Column(db.Integer, db.ForeignKey('school.id'), nullable=True) # Nullable for super admins
+    is_verified = db.Column(db.Boolean, default=False, nullable=False)
+    otp = db.Column(db.String(6), nullable=True)
+    otp_expiration = db.Column(db.DateTime, nullable=True)
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
 
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
+
+    def get_reset_token(self, expires_sec=1800):
+        s = URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
+        return s.dumps(self.id)
+
+    @staticmethod
+    def verify_reset_token(token, expires_sec=1800):
+        s = URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
+        try:
+            user_id = s.loads(token, max_age=expires_sec)
+        except Exception:
+            return None
+        return User.query.get(user_id)
 
     def __repr__(self):
         return f'<User {self.email}>'

@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="exam-container">
+    <div class="exam-main">
+        <div id="question-container">
+            <!-- Question content will be dynamically inserted here by JavaScript -->
+        </div>
+        <div class="exam-controls">
+            <button id="mark-for-review" class="button">Mark for Review</button>
+            <div>
+                <button id="prev-btn" class="button">Previous</button>
+                <button id="next-btn" class="button button-primary">Next</button>
+            </div>
+        </div>
+    </div>
+    <aside class="exam-sidebar">
+        <div class="timer-card">
+            <h4>Time Remaining</h4>
+            <div id="timer" class="timer-display">
+                <span id="hours">01</span>:<span id="minutes">20</span>:<span id="seconds">30</span>
+            </div>
+        </div>
+        <div class="navigation-card">
+            <h4>Question Navigation</h4>
+            <div id="question-navigation" class="navigation-grid">
+                {% for question in exam.questions %}
+                <button class="nav-button" data-question-index="{{ loop.index0 }}">{{ loop.index }}</button>
+                {% endfor %}
+            </div>
+            <div class="nav-legend">
+                <div><span class="legend-box unanswered"></span> Unanswered</div>
+                <div><span class="legend-box answered"></span> Answered</div>
+                <div><span class="legend-box marked"></span> Marked for Review</div>
+            </div>
+        </div>
+        <button id="submit-exam" class="button button-primary button-block">Submit Exam</button>
+    </aside>
+</div>
+
+<!-- Add a script tag for our exam logic -->
+<script src="{{ url_for('static', filename='js/exam.js') }}"></script>
+
+<!-- Pass exam data to JavaScript -->
+<script>
+    const examData = {{ exam | tojson }};
+</script>
+{% endblock %}
