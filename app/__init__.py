@@ -17,12 +17,13 @@ def create_app(config_class=None):
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
     # Email configuration for production SMTP
-    app.config['MAIL_SERVER'] = os.environ.get('MAIL_SERVER')
-    app.config['MAIL_PORT'] = int(os.environ.get('MAIL_PORT', 587))
-    app.config['MAIL_USE_TLS'] = os.environ.get('MAIL_USE_TLS', 'true').lower() in ['true', 'on', '1']
-    app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME')
-    app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD')
-    app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('MAIL_DEFAULT_SENDER')
+    # These values are loaded from the .env file.
+    app.config['MAIL_SERVER'] = os.environ.get('MAIL_SERVER') # e.g., 'smtp.gmail.com'
+    app.config['MAIL_PORT'] = int(os.environ.get('MAIL_PORT', 587)) # Port for TLS
+    app.config['MAIL_USE_TLS'] = os.environ.get('MAIL_USE_TLS', 'true').lower() in ['true', 'on', '1'] # Use Transport Layer Security
+    app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME') # Your email address
+    app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD') # Your email password or app-specific password
+    app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('MAIL_DEFAULT_SENDER') # The "From" address for emails
 
     # Initialize extensions with the app
     db.init_app(app)
