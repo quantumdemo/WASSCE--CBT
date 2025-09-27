@@ -7,7 +7,7 @@
             <img src="https://via.placeholder.com/40" alt="User Avatar">
             <div>
                 <strong>{{ current_user.full_name }}</strong>
-                <small>Student</small>
+                <small>{{ current_user.role.value.title() }}</small>
             </div>
         </div>
         <nav class="dashboard-nav">
