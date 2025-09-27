@@ -327,3 +327,38 @@ def results():
 @login_required
 def settings():
     return render_template('placeholder.html', title='Settings')
+
+# --- Student Placeholder Routes ---
+@bp.route('/student/practice')
+@login_required
+def student_practice():
+    return render_template('placeholder.html', title='Practice View')
+
+@bp.route('/student/mock-exams')
+@login_required
+def student_mock_exams():
+    return render_template('placeholder.html', title='Mock Exams')
+
+@bp.route('/student/past-questions')
+@login_required
+def student_past_questions():
+    return render_template('placeholder.html', title='Past Questions')
+
+@bp.route('/student/resources')
+@login_required
+def student_resources():
+    return render_template('placeholder.html', title='Resources')
+
+# --- Teacher Placeholder Routes ---
+@bp.route('/teacher/exams')
+@login_required
+@role_required('teacher')
+def teacher_exams():
+    return render_template('placeholder.html', title='Manage Exams')
+
+# --- Admin Placeholder Routes ---
+@bp.route('/admin/audit-logs')
+@login_required
+@role_required('admin')
+def audit_logs():
+    return render_template('placeholder.html', title='Audit Logs')

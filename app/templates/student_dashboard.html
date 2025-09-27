@@ -12,11 +12,11 @@
         </div>
         <nav class="dashboard-nav">
             <ul>
-                <li class="active"><a href="#">Dashboard</a></li>
-                <li><a href="#">Practice View</a></li>
-                <li><a href="#">Mock Exams</a></li>
-                <li><a href="#">Past Questions</a></li>
-                <li><a href="#">Resources</a></li>
+                <li class="active"><a href="{{ url_for('main.dashboard') }}">Dashboard</a></li>
+                <li><a href="{{ url_for('main.student_practice') }}">Practice View</a></li>
+                <li><a href="{{ url_for('main.student_mock_exams') }}">Mock Exams</a></li>
+                <li><a href="{{ url_for('main.student_past_questions') }}">Past Questions</a></li>
+                <li><a href="{{ url_for('main.student_resources') }}">Resources</a></li>
             </ul>
         </nav>
         <div class="logout-link">
