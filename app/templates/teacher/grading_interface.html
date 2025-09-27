@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="dashboard-container">
+    <aside class="sidebar">
+        <!-- This would be dynamic in a real app -->
+        <div class="user-profile">
+            <img src="https://via.placeholder.com/40" alt="User Avatar">
+            <div>
+                <strong>Mr. Adebayo</strong>
+                <small>Teacher</small>
+            </div>
+        </div>
+        <nav class="dashboard-nav">
+            <ul>
+                <li><a href="#">Dashboard</a></li>
+                <li><a href="{{ url_for('main.question_bank') }}">Question Bank</a></li>
+                <li><a href="#">Exams</a></li>
+                <li class="active"><a href="#">Results</a></li>
+                <li><a href="#">Settings</a></li>
+            </ul>
+        </nav>
+        <div class="logout-link">
+            <a href="{{ url_for('auth.logout') }}">Logout</a>
+        </div>
+    </aside>
+    <main class="dashboard-main">
+        <div class="dashboard-header">
+            <h1>Grade Exam Submission</h1>
+            <p><strong>Exam:</strong> {{ attempt.exam_title }}<br><strong>Student:</strong> {{ attempt.student_name }}</p>
+        </div>
+
+        <form class="grading-form">
+            {% for item in attempt.questions_to_grade %}
+            <div class="content-panel grading-panel">
+                <div class="question-section">
+                    <h4>Question {{ loop.index }}</h4>
+                    <p>{{ item.question_text }}</p>
+                </div>
+                <div class="answer-section">
+                    <h5>Student's Answer</h5>
+                    <div class="student-answer-box">
+                        {{ item.student_answer }}
+                    </div>
+                </div>
+                <div class="grading-section">
+                    <div class="form-group">
+                        <label for="score-{{ item.question_id }}">Score</label>
+                        <input type="number" id="score-{{ item.question_id }}" name="score-{{ item.question_id }}" placeholder="Score / {{ item.max_score }}" max="{{ item.max_score }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="comments-{{ item.question_id }}">Comments</label>
+                        <textarea id="comments-{{ item.question_id }}" name="comments-{{ item.question_id }}" rows="3" placeholder="Provide feedback for the student..."></textarea>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+
+            <div class="form-actions">
+                <button type="submit" class="button button-primary">Submit Grade</button>
+            </div>
+        </form>
+    </main>
+</div>
+{% endblock %}
