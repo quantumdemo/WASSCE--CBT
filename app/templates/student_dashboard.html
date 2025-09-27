@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="dashboard-container">
+    <aside class="sidebar">
+        <div class="user-profile">
+            <!-- User info will be dynamic later -->
+            <img src="https://via.placeholder.com/40" alt="User Avatar">
+            <div>
+                <strong>Sarah</strong>
+                <small>Student</small>
+            </div>
+        </div>
+        <nav class="dashboard-nav">
+            <ul>
+                <li class="active"><a href="#">Dashboard</a></li>
+                <li><a href="#">Practice View</a></li>
+                <li><a href="#">Mock Exams</a></li>
+                <li><a href="#">Past Questions</a></li>
+                <li><a href="#">Resources</a></li>
+            </ul>
+        </nav>
+        <div class="logout-link">
+            <a href="{{ url_for('auth.logout') }}">Logout</a>
+        </div>
+    </aside>
+    <main class="dashboard-main">
+        <h1>Dashboard</h1>
+        <!-- Content will be added later -->
+        <p>Welcome to your dashboard, {{ current_user.full_name }}!</p>
+    </main>
+</div>
+{% endblock %}

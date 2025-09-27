@@ -1,0 +1,39 @@
+import os
+from flask import Flask
+from dotenv import load_dotenv
+
+# Import extensions from the new file
+from app.extensions import db, migrate, login_manager
+
+load_dotenv()
+
+def create_app(config_class=None):
+    app = Flask(__name__)
+
+    # Load configuration
+    app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'a_default_secret_key')
+    # Use an absolute path for the SQLite database to avoid ambiguity
+    basedir = os.path.abspath(os.path.dirname(__file__))
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///' + os.path.join(basedir, '..', 'site.db'))
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+    # Initialize extensions with the app
+    db.init_app(app)
+    migrate.init_app(app, db)
+    login_manager.init_app(app)
+
+    # Register blueprints
+    from app.auth import bp as auth_bp
+    app.register_blueprint(auth_bp, url_prefix='/auth')
+
+    from app.main import bp as main_bp
+    app.register_blueprint(main_bp)
+
+    # Import models inside create_app to avoid circular imports with extensions
+    with app.app_context():
+        from app import models
+
+    # The main shell context processor is now defined in run.py
+    # to provide access to all models when running 'flask shell'.
+
+    return app
