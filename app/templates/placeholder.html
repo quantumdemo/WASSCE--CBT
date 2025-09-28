@@ -21,10 +21,23 @@
     <main class="dashboard-main">
         <div class="dashboard-header">
             <h1>{{ title }}</h1>
-            <p>This feature is currently under construction.</p>
+            <p>This feature is a work in progress.</p>
         </div>
-        <div class="content-panel">
-            <p>Please check back later for updates. We are working hard to bring this feature to you soon!</p>
+        <div class="content-panel" style="text-align: center; padding: 50px 20px;">
+            <div class="placeholder-icon" style="margin-bottom: 20px;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color: #ccc;"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
+            </div>
+            <h2>Coming Soon!</h2>
+            <p>We are currently building this page. Please check back later for updates.</p>
+            {% if current_user.role.value == 'student' %}
+                <a href="{{ url_for('main.dashboard') }}" class="button" style="margin-top: 20px;">Back to Dashboard</a>
+            {% elif current_user.role.value == 'teacher' %}
+                <a href="{{ url_for('main.teacher_dashboard') }}" class="button" style="margin-top: 20px;">Back to Dashboard</a>
+            {% elif current_user.role.value == 'admin' %}
+                <a href="{{ url_for('main.admin_dashboard') }}" class="button" style="margin-top: 20px;">Back to Dashboard</a>
+            {% else %}
+                 <a href="{{ url_for('main.index') }}" class="button" style="margin-top: 20px;">Back to Home</a>
+            {% endif %}
         </div>
     </main>
 </div>
