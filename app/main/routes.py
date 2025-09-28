@@ -89,8 +89,12 @@ def teacher_dashboard():
 @login_required
 @role_required('teacher')
 def teacher_analytics():
+    from app.models import ExamAttempt
     # Mock data for the analytics page
+    total_submissions = ExamAttempt.query.count()
+
     mock_analytics = {
+        'total_submissions': total_submissions,
         'overall_average': 78,
         'completion_rate': 92,
         'average_score_by_subject': [
