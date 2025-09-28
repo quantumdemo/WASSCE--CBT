@@ -1,0 +1,19 @@
+<div class="user-profile">
+    <img src="https://via.placeholder.com/40" alt="User Avatar">
+    <div>
+        <strong>{{ current_user.full_name }}</strong>
+        <small>{{ current_user.role.value.title() }}</small>
+    </div>
+</div>
+<nav class="dashboard-nav">
+    <ul>
+        <li class="{{ 'active' if request.endpoint == 'main.teacher_dashboard' else '' }}"><a href="{{ url_for('main.teacher_dashboard') }}">Dashboard</a></li>
+        <li class="{{ 'active' if request.endpoint == 'main.question_bank' else '' }}"><a href="{{ url_for('main.question_bank') }}">Question Bank</a></li>
+        <li class="{{ 'active' if request.endpoint == 'main.teacher_exams' else '' }}"><a href="{{ url_for('main.teacher_exams') }}">Exams</a></li>
+        <li class="{{ 'active' if request.endpoint == 'main.teacher_grading' else '' }}"><a href="{{ url_for('main.results') }}">Results</a></li>
+        <li class="{{ 'active' if request.endpoint == 'main.settings' else '' }}"><a href="{{ url_for('main.settings') }}">Settings</a></li>
+    </ul>
+</nav>
+<div class="logout-link">
+    <a href="{{ url_for('auth.logout') }}">Logout</a>
+</div>

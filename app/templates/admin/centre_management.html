@@ -3,26 +3,7 @@
 {% block content %}
 <div class="dashboard-container">
     <aside class="sidebar">
-        <!-- This would be dynamic in a real app -->
-        <div class="user-profile">
-            <img src="https://via.placeholder.com/40" alt="User Avatar">
-            <div>
-                <strong>{{ current_user.full_name }}</strong>
-                <small>{{ current_user.role.value.title() }}</small>
-            </div>
-        </div>
-        <nav class="dashboard-nav">
-            <ul>
-                <li><a href="{{ url_for('main.admin_dashboard') }}">Dashboard</a></li>
-                <li><a href="{{ url_for('main.user_management') }}">User Management</a></li>
-                <li class="active"><a href="#">Centre Management</a></li>
-                <li><a href="{{ url_for('main.settings') }}">System Settings</a></li>
-                <li><a href="{{ url_for('main.audit_logs') }}">Audit Logs</a></li>
-            </ul>
-        </nav>
-        <div class="logout-link">
-            <a href="{{ url_for('auth.logout') }}">Logout</a>
-        </div>
+        {% include 'admin_sidebar.html' %}
     </aside>
     <main class="dashboard-main">
         <div class="dashboard-header">

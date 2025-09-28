@@ -3,25 +3,7 @@
 {% block content %}
 <div class="dashboard-container">
     <aside class="sidebar">
-        <div class="user-profile">
-            <img src="https://via.placeholder.com/40" alt="User Avatar">
-            <div>
-                <strong>{{ current_user.full_name }}</strong>
-                <small>{{ current_user.role.value.title() }}</small>
-            </div>
-        </div>
-        <nav class="dashboard-nav">
-            <ul>
-                <li class="active"><a href="{{ url_for('main.dashboard') }}">Dashboard</a></li>
-                <li><a href="{{ url_for('main.student_practice') }}">Practice View</a></li>
-                <li><a href="{{ url_for('main.student_mock_exams') }}">Mock Exams</a></li>
-                <li><a href="{{ url_for('main.student_past_questions') }}">Past Questions</a></li>
-                <li><a href="{{ url_for('main.student_resources') }}">Resources</a></li>
-            </ul>
-        </nav>
-        <div class="logout-link">
-            <a href="{{ url_for('auth.logout') }}">Logout</a>
-        </div>
+        {% include 'student_sidebar.html' %}
     </aside>
     <main class="dashboard-main">
         <div class="dashboard-header">

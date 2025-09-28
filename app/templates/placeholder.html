@@ -3,20 +3,14 @@
 {% block content %}
 <div class="dashboard-container">
     <aside class="sidebar">
-        <!-- This sidebar will be generic. A real implementation would show the correct sidebar based on user role -->
-        <div class="user-profile">
-            <img src="https://via.placeholder.com/40" alt="User Avatar">
-            <div>
-                <strong>{{ current_user.full_name }}</strong>
-                <small>{{ current_user.role.value.title() }}</small>
-            </div>
-        </div>
-        <nav class="dashboard-nav">
-           <!-- Generic Nav -->
-        </nav>
-        <div class="logout-link">
-            <a href="{{ url_for('auth.logout') }}">Logout</a>
-        </div>
+        {# Dynamically include the correct sidebar based on user role #}
+        {% if current_user.role.value == 'student' %}
+            {% include 'student_sidebar.html' %}
+        {% elif current_user.role.value == 'teacher' %}
+            {% include 'teacher_sidebar.html' %}
+        {% elif current_user.role.value == 'admin' %}
+            {% include 'admin_sidebar.html' %}
+        {% endif %}
     </aside>
     <main class="dashboard-main">
         <div class="dashboard-header">

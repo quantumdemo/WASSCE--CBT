@@ -93,6 +93,7 @@ def teacher_analytics():
     mock_analytics = {
         'overall_average': 78,
         'completion_rate': 92,
+        'total_submissions': 1234,
         'average_score_by_subject': [
             {'subject': 'Mathematics', 'score': 72},
             {'subject': 'Physics', 'score': 85},
@@ -364,6 +365,12 @@ def student_resources():
 @role_required('teacher')
 def teacher_exams():
     return render_template('placeholder.html', title='Manage Exams')
+
+@bp.route('/teacher/grading')
+@login_required
+@role_required('teacher')
+def teacher_grading():
+    return render_template('placeholder.html', title='Grade Submissions')
 
 # --- Admin Placeholder Routes ---
 @bp.route('/admin/audit-logs')

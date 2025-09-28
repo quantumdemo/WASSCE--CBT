@@ -1,0 +1,19 @@
+<div class="user-profile">
+    <img src="https://via.placeholder.com/40" alt="User Avatar">
+    <div>
+        <strong>{{ current_user.full_name }}</strong>
+        <small>{{ current_user.role.value.title() }}</small>
+    </div>
+</div>
+<nav class="dashboard-nav">
+    <ul>
+        <li class="{{ 'active' if request.endpoint == 'main.admin_dashboard' else '' }}"><a href="{{ url_for('main.admin_dashboard') }}">Dashboard</a></li>
+        <li class="{{ 'active' if request.endpoint == 'main.user_management' else '' }}"><a href="{{ url_for('main.user_management') }}">User Management</a></li>
+        <li class="{{ 'active' if request.endpoint == 'main.centre_management' else '' }}"><a href="{{ url_for('main.centre_management') }}">Centre Management</a></li>
+        <li class="{{ 'active' if request.endpoint == 'main.settings' else '' }}"><a href="{{ url_for('main.settings') }}">System Settings</a></li>
+        <li class="{{ 'active' if request.endpoint == 'main.audit_logs' else '' }}"><a href="{{ url_for('main.audit_logs') }}">Audit Logs</a></li>
+    </ul>
+</nav>
+<div class="logout-link">
+    <a href="{{ url_for('auth.logout') }}">Logout</a>
+</div>
