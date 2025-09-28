@@ -17,6 +17,7 @@ class UserRole(enum.Enum):
 class School(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(120), unique=True, nullable=False)
+    location = db.Column(db.String(120), nullable=True)
     users = db.relationship('User', backref='school', lazy=True)
 
     def __repr__(self):
@@ -32,6 +33,7 @@ class User(UserMixin, db.Model):
     is_verified = db.Column(db.Boolean, default=False, nullable=False)
     otp = db.Column(db.String(6), nullable=True)
     otp_expiration = db.Column(db.DateTime, nullable=True)
+    last_login = db.Column(db.DateTime, nullable=True)
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -71,6 +73,8 @@ class Question(db.Model):
     explanation = db.Column(db.Text, nullable=True)
     subject = db.Column(db.String(100), nullable=False)
     topic = db.Column(db.String(100), nullable=True)
+    difficulty = db.Column(db.String(50), default='Medium', nullable=False)
+    max_score = db.Column(db.Integer, default=10, nullable=False)
     created_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False) # Teacher ID
     version = db.Column(db.Integer, default=1, nullable=False)
 
@@ -86,8 +90,10 @@ exam_questions = db.Table('exam_questions',
 class Exam(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(150), nullable=False)
+    subject = db.Column(db.String(100), nullable=False)
     duration_minutes = db.Column(db.Integer, nullable=False)
     created_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False) # Teacher ID
+    creation_date = db.Column(db.DateTime, nullable=False, default=db.func.current_timestamp())
     questions = db.relationship('Question', secondary=exam_questions, lazy='subquery',
                                 backref=db.backref('exams', lazy=True))
 
