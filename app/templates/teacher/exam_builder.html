@@ -26,85 +26,71 @@
     </aside>
     <main class="dashboard-main">
         <div class="dashboard-header">
-            <h1>Exam Builder</h1>
-            <p>Create a new exam by selecting questions from the question bank.</p>
+            <h1>{{ title }}</h1>
+            <p>{{ 'Create a new exam by selecting questions.' if not exam else 'Update the details of your exam.' }}</p>
         </div>
 
-        <div class="content-panel">
-            <form class="exam-builder-form">
+        <form method="POST" action="{{ url_for('main.edit_exam', exam_id=exam.id) if exam else url_for('main.exam_builder') }}" class="exam-builder-form">
+            <div class="content-panel">
                 <div class="form-row">
                     <div class="form-group">
                         <label for="exam-title">Exam Title</label>
-                        <input type="text" id="exam-title" name="exam-title" placeholder="e.g., Mid-term Physics Exam">
+                        <input type="text" id="exam-title" name="exam-title" placeholder="e.g., Mid-term Physics Exam" value="{{ exam.title if exam else '' }}" required>
                     </div>
                     <div class="form-group">
                         <label for="subject">Subject</label>
-                        <select id="subject" name="subject">
+                        <select id="subject" name="subject" required>
                             <option value="">Select a subject</option>
-                            <option value="mathematics">Mathematics</option>
-                            <option value="further_mathematics">Further Mathematics</option>
-                            <option value="physics">Physics</option>
-                            <option value="chemistry">Chemistry</option>
-                            <option value="biology">Biology</option>
-                            <option value="english_language">English Language</option>
-                            <option value="literature">Literature in English</option>
-                            <option value="government">Government</option>
-                            <option value="economics">Economics</option>
-                            <option value="geography">Geography</option>
-                            <option value="history">History</option>
-                            <option value="computer_science">Computer Science</option>
-                            <option value="agricultural_science">Agricultural Science</option>
-                            <option value="crk">Christian Religious Knowledge</option>
-                            <option value="irk">Islamic Religious Knowledge</option>
+                            {% set subjects = ["Mathematics", "Further Mathematics", "Physics", "Chemistry", "Biology", "English Language", "Literature in English", "Government", "Economics", "Geography", "History", "Computer Science", "Agricultural Science", "Christian Religious Knowledge", "Islamic Religious Knowledge"] %}
+                            {% for s in subjects %}
+                                <option value="{{ s }}" {% if exam and exam.subject == s %}selected{% endif %}>{{ s }}</option>
+                            {% endfor %}
                         </select>
                     </div>
                 </div>
                 <div class="form-row">
                     <div class="form-group">
                         <label for="duration">Duration (minutes)</label>
-                        <input type="number" id="duration" name="duration" placeholder="e.g., 60">
+                        <input type="number" id="duration" name="duration" placeholder="e.g., 60" value="{{ exam.duration_minutes if exam else '' }}" required>
                     </div>
-                    <div class="form-group">
-                        <label for="num-questions">Number of Questions</label>
-                        <input type="number" id="num-questions" name="num-questions" placeholder="e.g., 50">
-                    </div>
-                </div>
-            </form>
-        </div>
-
-        <div class="content-panel" style="margin-top: 20px;">
-            <h2>Select Questions</h2>
-            <div class="content-toolbar">
-                <div class="search-container">
-                    <input type="search" id="question-search" placeholder="Search questions by keyword or topic...">
                 </div>
             </div>
-            <table class="data-table" id="questions-table">
-                <thead>
-                    <tr>
-                        <th><input type="checkbox" id="select-all"></th>
-                        <th>Question</th>
-                        <th>Topic</th>
-                        <th>Difficulty</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for q in questions %}
-                    <tr>
-                        <td><input type="checkbox" class="question-checkbox" name="question" value="{{ q.id }}"></td>
-                        <td>{{ q.text | truncate(80) }}</td>
-                        <td>{{ q.topic }}</td>
-                        <td><span class="difficulty-badge difficulty-{{ q.difficulty | lower }}">{{ q.difficulty }}</span></td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
 
-        <div class="form-actions">
-            <button class="button">Preview Exam</button>
-            <button class="button button-primary">Save Exam</button>
-        </div>
+            <div class="content-panel" style="margin-top: 20px;">
+                <h2>Select Questions</h2>
+                <div class="content-toolbar">
+                    <div class="search-container">
+                        <input type="search" id="question-search" placeholder="Search questions by keyword or topic...">
+                    </div>
+                </div>
+                <table class="data-table" id="questions-table">
+                    <thead>
+                        <tr>
+                            <th><input type="checkbox" id="select-all"></th>
+                            <th>Question</th>
+                            <th>Topic</th>
+                            <th>Difficulty</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% set selected_questions = exam.questions|map(attribute='id')|list if exam else [] %}
+                        {% for q in questions %}
+                        <tr>
+                            <td><input type="checkbox" class="question-checkbox" name="question" value="{{ q.id }}" {% if q.id in selected_questions %}checked{% endif %}></td>
+                            <td>{{ q.text | truncate(80) }}</td>
+                            <td>{{ q.topic }}</td>
+                            <td><span class="difficulty-badge difficulty-{{ q.difficulty | lower }}">{{ q.difficulty }}</span></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="form-actions">
+                <button type="button" class="button">Preview Exam</button>
+                <button type="submit" class="button button-primary">{{ 'Update Exam' if exam else 'Save Exam' }}</button>
+            </div>
+        </form>
     </main>
 </div>
 <script src="{{ url_for('static', filename='js/exam_builder.js') }}"></script>

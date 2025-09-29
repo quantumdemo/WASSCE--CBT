@@ -269,21 +269,57 @@ def add_question():
 
     return render_template('teacher/add_question.html', title='Add New Question')
 
-@bp.route('/teacher/exam-builder')
+@bp.route('/teacher/exam-builder', methods=['GET', 'POST'])
 @login_required
 @role_required('teacher')
 def exam_builder():
+    if request.method == 'POST':
+        title = request.form.get('exam-title')
+        subject = request.form.get('subject')
+        duration = int(request.form.get('duration'))
+        question_ids = request.form.getlist('question')
+
+        new_exam = Exam(
+            title=title,
+            subject=subject,
+            duration_minutes=duration,
+            created_by=current_user.id
+        )
+
+        questions = Question.query.filter(Question.id.in_(question_ids)).all()
+        new_exam.questions.extend(questions)
+
+        db.session.add(new_exam)
+        db.session.commit()
+
+        flash('Exam created successfully!', 'success')
+        return redirect(url_for('main.teacher_exams'))
+
     all_questions = Question.query.all()
-    questions_data = [
-        {
-            'id': q.id,
-            'text': q.text,
-            'topic': q.topic,
-            'difficulty': q.difficulty
-        }
-        for q in all_questions
-    ]
-    return render_template('teacher/exam_builder.html', title='Exam Builder', questions=questions_data)
+    return render_template('teacher/exam_builder.html', title='Exam Builder', questions=all_questions)
+
+@bp.route('/teacher/exam/<int:exam_id>/edit', methods=['GET', 'POST'])
+@login_required
+@role_required('teacher')
+def edit_exam(exam_id):
+    exam = Exam.query.get_or_404(exam_id)
+    if exam.created_by != current_user.id:
+        abort(403)
+
+    if request.method == 'POST':
+        exam.title = request.form.get('exam-title')
+        exam.subject = request.form.get('subject')
+        exam.duration_minutes = int(request.form.get('duration'))
+
+        question_ids = request.form.getlist('question')
+        exam.questions = Question.query.filter(Question.id.in_(question_ids)).all()
+
+        db.session.commit()
+        flash('Exam updated successfully!', 'success')
+        return redirect(url_for('main.teacher_exams'))
+
+    all_questions = Question.query.all()
+    return render_template('teacher/exam_builder.html', title='Edit Exam', exam=exam, questions=all_questions)
 
 @bp.route('/teacher/grading')
 @login_required
@@ -488,6 +524,20 @@ def teacher_exams():
         })
 
     return render_template('teacher/manage_exams.html', title='Manage Exams', exams=exams_data)
+
+@bp.route('/teacher/exam/<int:exam_id>/delete', methods=['POST'])
+@login_required
+@role_required('teacher')
+def delete_exam(exam_id):
+    exam = Exam.query.get_or_404(exam_id)
+    if exam.created_by != current_user.id:
+        abort(403)
+
+    ExamAttempt.query.filter_by(exam_id=exam.id).delete()
+    db.session.delete(exam)
+    db.session.commit()
+    flash('Exam has been deleted successfully.', 'success')
+    return redirect(url_for('main.teacher_exams'))
 
 @bp.route('/admin/audit-logs')
 @login_required
