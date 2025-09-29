@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="dashboard-container">
+    <aside class="sidebar">
+        <div class="user-profile">
+            <img src="https://via.placeholder.com/40" alt="User Avatar">
+            <div>
+                <strong>{{ current_user.full_name }}</strong>
+                <small>{{ current_user.role.value.title() }}</small>
+            </div>
+        </div>
+        <nav class="dashboard-nav">
+            <ul>
+                <li><a href="{{ url_for('main.dashboard') }}">Dashboard</a></li>
+                <li><a href="{{ url_for('main.student_practice') }}">Practice View</a></li>
+                <li><a href="{{ url_for('main.student_mock_exams') }}">Mock Exams</a></li>
+                <li><a href="{{ url_for('main.student_past_questions') }}">Past Questions</a></li>
+                <li class="active"><a href="{{ url_for('main.student_resources') }}">Resources</a></li>
+                <li><a href="{{ url_for('main.settings') }}">Settings</a></li>
+            </ul>
+        </nav>
+        <div class="logout-link">
+            <a href="{{ url_for('auth.logout') }}">Logout</a>
+        </div>
+    </aside>
+    <main class="dashboard-main">
+        <div class="dashboard-header">
+            <h1>Resource Library</h1>
+            <p>Access articles, videos, and documents to aid your studies.</p>
+        </div>
+
+        <div class="resource-list">
+            {% for resource in resources %}
+            <div class="resource-card">
+                <div class="resource-icon">
+                    {% if resource.resource_type.value == 'pdf' %}
+                        <svg_icon>file-pdf</svg_icon>
+                    {% elif resource.resource_type.value == 'video' %}
+                        <svg_icon>video</svg_icon>
+                    {% else %}
+                        <svg_icon>link</svg_icon>
+                    {% endif %}
+                </div>
+                <div class="resource-details">
+                    <h3>{{ resource.title }}</h3>
+                    <p class="description">{{ resource.description }}</p>
+                    <span class="badge subject-badge">{{ resource.subject }}</span>
+                </div>
+                <div class="resource-actions">
+                    <a href="{{ resource.link }}" target="_blank" class="button">View Resource</a>
+                </div>
+            </div>
+            {% else %}
+            <div class="content-panel" style="text-align: center; padding: 40px;">
+                <p>No resources have been uploaded yet. Please check back later.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </main>
+</div>
+{% endblock %}

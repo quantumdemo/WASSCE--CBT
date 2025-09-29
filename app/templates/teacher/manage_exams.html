@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="dashboard-container">
+    <aside class="sidebar">
+        <div class="user-profile">
+            <img src="https://via.placeholder.com/40" alt="User Avatar">
+            <div>
+                <strong>{{ current_user.full_name }}</strong>
+                <small>{{ current_user.role.value.title() }}</small>
+            </div>
+        </div>
+        <nav class="dashboard-nav">
+            <ul>
+                <li><a href="{{ url_for('main.teacher_dashboard') }}">Dashboard</a></li>
+                <li><a href="{{ url_for('main.question_bank') }}">Question Bank</a></li>
+                <li class="active"><a href="{{ url_for('main.teacher_exams') }}">Exams</a></li>
+                <li><a href="{{ url_for('main.grading_list') }}">Grading</a></li>
+                <li><a href="{{ url_for('main.settings') }}">Settings</a></li>
+            </ul>
+        </nav>
+        <div class="logout-link">
+            <a href="{{ url_for('auth.logout') }}">Logout</a>
+        </div>
+    </aside>
+    <main class="dashboard-main">
+        <div class="dashboard-header">
+            <h1>Manage Exams</h1>
+            <p>View, edit, or delete your created exams.</p>
+        </div>
+
+        <div class="content-toolbar">
+            <div class="search-container">
+                <input type="search" placeholder="Search by exam title or subject...">
+            </div>
+            <a href="{{ url_for('main.exam_builder') }}" class="button button-primary">Create New Exam</a>
+        </div>
+
+        <div class="content-panel">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Exam Title</th>
+                        <th>Subject</th>
+                        <th>Questions</th>
+                        <th>Date Created</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for exam in exams %}
+                    <tr>
+                        <td>{{ exam.title }}</td>
+                        <td>{{ exam.subject }}</td>
+                        <td>{{ exam.question_count }}</td>
+                        <td>{{ exam.creation_date.strftime('%Y-%m-%d') }}</td>
+                        <td class="action-links">
+                            <a href="#">Edit</a> | <a href="#" class="danger-link">Delete</a>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" style="text-align: center; padding: 20px;">You have not created any exams yet.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </main>
+</div>
+{% endblock %}

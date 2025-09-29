@@ -129,3 +129,35 @@ class Grade(db.Model):
 
     def __repr__(self):
         return f'<Grade for Attempt {self.attempt_id} on Question {self.question_id}>'
+
+class AuditLog(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    action = db.Column(db.String(120), nullable=False)
+    timestamp = db.Column(db.DateTime, nullable=False, default=db.func.current_timestamp())
+    details = db.Column(db.Text, nullable=True)
+
+    user = db.relationship('User', backref='audit_logs')
+
+    def __repr__(self):
+        return f'<AuditLog {self.id} - {self.action}>'
+
+class ResourceType(enum.Enum):
+    PDF = 'pdf'
+    VIDEO = 'video'
+    LINK = 'link'
+
+class Resource(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(150), nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    subject = db.Column(db.String(100), nullable=False)
+    resource_type = db.Column(db.Enum(ResourceType), nullable=False)
+    link = db.Column(db.String(255), nullable=False)
+    uploaded_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    creation_date = db.Column(db.DateTime, nullable=False, default=db.func.current_timestamp())
+
+    uploader = db.relationship('User', backref='resources')
+
+    def __repr__(self):
+        return f'<Resource {self.title}>'

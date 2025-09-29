@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="dashboard-container">
+    <aside class="sidebar">
+        <div class="user-profile">
+            <img src="https://via.placeholder.com/40" alt="User Avatar">
+            <div>
+                <strong>{{ current_user.full_name }}</strong>
+                <small>{{ current_user.role.value.title() }}</small>
+            </div>
+        </div>
+        <nav class="dashboard-nav">
+            <ul>
+                <li><a href="{{ url_for('main.dashboard') }}">Dashboard</a></li>
+                <li><a href="{{ url_for('main.student_practice') }}">Practice View</a></li>
+                <li><a href="{{ url_for('main.student_mock_exams') }}">Mock Exams</a></li>
+                <li class="active"><a href="{{ url_for('main.student_past_questions') }}">Past Questions</a></li>
+                <li><a href="{{ url_for('main.student_resources') }}">Resources</a></li>
+                <li><a href="{{ url_for('main.settings') }}">Settings</a></li>
+            </ul>
+        </nav>
+        <div class="logout-link">
+            <a href="{{ url_for('auth.logout') }}">Logout</a>
+        </div>
+    </aside>
+    <main class="dashboard-main">
+        <div class="dashboard-header">
+            <h1>Past Questions Browser</h1>
+            <p>Review past questions to sharpen your skills.</p>
+        </div>
+
+        <div class="content-toolbar">
+            <form method="GET" action="{{ url_for('main.student_past_questions') }}" class="filter-form">
+                <div class="form-group">
+                    <label for="subject-filter">Filter by Subject</label>
+                    <select id="subject-filter" name="subject" onchange="this.form.submit()">
+                        <option value="">All Subjects</option>
+                        {% for subject in subjects %}
+                            <option value="{{ subject }}" {% if subject == selected_subject %}selected{% endif %}>{{ subject }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </form>
+        </div>
+
+        <div class="question-list">
+            {% for question in questions %}
+            <div class="question-card">
+                <div class="question-text">
+                    <p>{{ question.text | safe }}</p>
+                </div>
+                <div class="question-meta">
+                    <span class="badge subject-badge">{{ question.subject }}</span>
+                    <span class="badge topic-badge">{{ question.topic }}</span>
+                </div>
+                <!-- Optionally, add a button to reveal the answer -->
+            </div>
+            {% else %}
+            <div class="content-panel" style="text-align: center; padding: 40px;">
+                <p>No questions found for the selected subject.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </main>
+</div>
+{% endblock %}

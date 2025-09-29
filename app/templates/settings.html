@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="dashboard-container">
+    <aside class="sidebar">
+        <div class="user-profile">
+            <img src="https://via.placeholder.com/40" alt="User Avatar">
+            <div>
+                <strong>{{ current_user.full_name }}</strong>
+                <small>{{ current_user.role.value.title() }}</small>
+            </div>
+        </div>
+        <nav class="dashboard-nav">
+            <!-- This nav should be dynamic based on role -->
+            {% if current_user.role.value == 'admin' %}
+                <li><a href="{{ url_for('main.admin_dashboard') }}">Dashboard</a></li>
+                <li><a href="{{ url_for('main.user_management') }}">User Management</a></li>
+                <li><a href="{{ url_for('main.centre_management') }}">Centre Management</a></li>
+                <li class="active"><a href="{{ url_for('main.settings') }}">System Settings</a></li>
+                <li><a href="{{ url_for('main.audit_logs') }}">Audit Logs</a></li>
+            {% elif current_user.role.value == 'teacher' %}
+                <li><a href="{{ url_for('main.teacher_dashboard') }}">Dashboard</a></li>
+                <li><a href="{{ url_for('main.question_bank') }}">Question Bank</a></li>
+                <li><a href="{{ url_for('main.teacher_exams') }}">Exams</a></li>
+                <li><a href="{{ url_for('main.grading_list') }}">Grading</a></li>
+                <li class="active"><a href="{{ url_for('main.settings') }}">Settings</a></li>
+            {% else %}
+                <li><a href="{{ url_for('main.dashboard') }}">Dashboard</a></li>
+                <li class="active"><a href="{{ url_for('main.settings') }}">Settings</a></li>
+            {% endif %}
+        </nav>
+        <div class="logout-link">
+            <a href="{{ url_for('auth.logout') }}">Logout</a>
+        </div>
+    </aside>
+    <main class="dashboard-main">
+        <div class="dashboard-header">
+            <h1>Settings</h1>
+            <p>Manage your account settings and preferences.</p>
+        </div>
+
+        <div class="content-panel">
+            <h2>Profile Information</h2>
+            <form method="POST" action="{{ url_for('main.settings') }}" class="settings-form">
+                <input type="hidden" name="form_type" value="profile">
+                <div class="form-group">
+                    <label for="full_name">Full Name</label>
+                    <input type="text" id="full_name" name="full_name" value="{{ current_user.full_name }}" required>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" name="email" value="{{ current_user.email }}" required>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="button button-primary">Update Profile</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="content-panel" style="margin-top: 20px;">
+            <h2>Change Password</h2>
+            <form method="POST" action="{{ url_for('main.settings') }}" class="settings-form">
+                <input type="hidden" name="form_type" value="password">
+                <div class="form-group">
+                    <label for="current_password">Current Password</label>
+                    <input type="password" id="current_password" name="current_password" required>
+                </div>
+                <div class="form-group">
+                    <label for="new_password">New Password</label>
+                    <input type="password" id="new_password" name="new_password" required>
+                </div>
+                <div class="form-group">
+                    <label for="confirm_password">Confirm New Password</label>
+                    <input type="password" id="confirm_password" name="confirm_password" required>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="button button-primary">Change Password</button>
+                </div>
+            </form>
+        </div>
+    </main>
+</div>
+{% endblock %}
