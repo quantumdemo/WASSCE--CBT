@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="dashboard-container">
+    <aside class="sidebar">
+        <div class="user-profile">
+            <img src="https://via.placeholder.com/40" alt="User Avatar">
+            <div>
+                <strong>{{ current_user.full_name }}</strong>
+                <small>{{ current_user.role.value.title() }}</small>
+            </div>
+        </div>
+        <nav class="dashboard-nav">
+            <ul>
+                <li><a href="{{ url_for('main.teacher_dashboard') }}">Dashboard</a></li>
+                <li><a href="{{ url_for('main.question_bank') }}">Question Bank</a></li>
+                <li><a href="{{ url_for('main.teacher_exams') }}">Exams</a></li>
+                <li><a href="{{ url_for('main.grading_list') }}">Grading</a></li>
+                <li class="active"><a href="{{ url_for('main.manage_resources') }}">Manage Resources</a></li>
+                <li><a href="{{ url_for('main.settings') }}">Settings</a></li>
+            </ul>
+        </nav>
+        <div class="logout-link">
+            <a href="{{ url_for('auth.logout') }}">Logout</a>
+        </div>
+    </aside>
+    <main class="dashboard-main">
+        <div class="dashboard-header">
+            <h1>Manage Resources</h1>
+            <p>Upload and manage educational materials for students.</p>
+        </div>
+
+        <div class="content-panel">
+            <h2>Add New Resource</h2>
+            <form method="POST" action="{{ url_for('main.manage_resources') }}" enctype="multipart/form-data" class="settings-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="title">Resource Title</label>
+                        <input type="text" id="title" name="title" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="subject">Subject</label>
+                        <input type="text" id="subject" name="subject" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <textarea id="description" name="description" rows="3"></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="resource_type">Resource Type</label>
+                        <select id="resource_type" name="resource_type" required>
+                            <option value="LINK">Link</option>
+                            <option value="PDF">PDF</option>
+                            <option value="VIDEO">Video</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="link">Link or File</label>
+                        <input type="text" id="link" name="link" placeholder="https://example.com/resource">
+                        <input type="file" id="file" name="file" style="display: none;">
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="button button-primary">Add Resource</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="content-panel" style="margin-top: 20px;">
+            <h2>Existing Resources</h2>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Subject</th>
+                        <th>Type</th>
+                        <th>Date Uploaded</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for resource in resources %}
+                    <tr>
+                        <td>{{ resource.title }}</td>
+                        <td>{{ resource.subject }}</td>
+                        <td>{{ resource.resource_type.value }}</td>
+                        <td>{{ resource.creation_date.strftime('%Y-%m-%d') }}</td>
+                        <td class="action-links">
+                            <a href="{{ url_for('main.edit_resource', resource_id=resource.id) }}">Edit</a> |
+                            <form action="{{ url_for('main.delete_resource', resource_id=resource.id) }}" method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this resource?');">
+                                <button type="submit" class="danger-link" style="border: none; background: none; cursor: pointer; padding: 0; font-size: inherit;">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" style="text-align: center; padding: 20px;">No resources have been uploaded yet.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </main>
+</div>
+
+<script>
+    // Show/hide file input based on resource type
+    const resourceTypeSelect = document.getElementById('resource_type');
+    const linkInput = document.getElementById('link');
+    const fileInput = document.getElementById('file');
+
+    resourceTypeSelect.addEventListener('change', function() {
+        if (this.value === 'LINK') {
+            linkInput.style.display = 'block';
+            linkInput.required = true;
+            fileInput.style.display = 'none';
+            fileInput.required = false;
+        } else {
+            linkInput.style.display = 'none';
+            linkInput.required = false;
+            fileInput.style.display = 'block';
+            fileInput.required = true;
+        }
+    });
+    // Trigger change event on page load to set initial state
+    resourceTypeSelect.dispatchEvent(new Event('change'));
+</script>
+{% endblock %}

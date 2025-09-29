@@ -1,11 +1,13 @@
-from flask import render_template, request, abort, flash, redirect, url_for
+from flask import render_template, request, abort, flash, redirect, url_for, current_app
 from flask_login import login_required, current_user
 from app.main import bp
 from app.decorators import role_required
-from app.models import Exam, ExamAttempt, User, School, Question, QuestionType, UserRole
+from app.models import Exam, ExamAttempt, User, School, Question, QuestionType, UserRole, Resource, ResourceType, AuditLog
 from app.extensions import db
 from sqlalchemy import func
 from datetime import datetime
+import os
+from werkzeug.utils import secure_filename
 
 @bp.route('/')
 @bp.route('/index')
@@ -198,8 +200,6 @@ def add_user():
         user.set_password(password)
         db.session.add(user)
 
-        # Log the action
-        from app.models import AuditLog
         log = AuditLog(
             user_id=current_user.id,
             action='Create User',
@@ -432,19 +432,17 @@ def student_practice():
         subject = request.form.get('subject')
         num_questions = int(request.form.get('num_questions'))
 
-        # Fetch random questions for the selected subject
         questions = Question.query.filter_by(subject=subject).order_by(func.random()).limit(num_questions).all()
 
         if len(questions) < num_questions:
             flash(f'Not enough questions available for {subject}. Please try a smaller number.', 'warning')
             return redirect(url_for('main.student_practice'))
 
-        # Create a new exam for the practice session
         practice_exam = Exam(
             title=f"Practice Session: {subject}",
             subject=subject,
             duration_minutes=int(num_questions * 1.5),
-            created_by=current_user.id  # The user "creates" their own practice exam
+            created_by=current_user.id
         )
         practice_exam.questions.extend(questions)
 
@@ -454,18 +452,15 @@ def student_practice():
         flash('Your practice session is ready. Good luck!', 'success')
         return redirect(url_for('main.exam', exam_id=practice_exam.id))
 
-    # For GET request, get all unique subjects
     subjects = [s[0] for s in db.session.query(Question.subject).distinct().all()]
     return render_template('student/practice_view.html', title='Practice View', subjects=subjects)
 
 @bp.route('/student/mock-exams')
 @login_required
 def student_mock_exams():
-    # Find exams the user has already attempted
     attempted_exams = ExamAttempt.query.filter_by(user_id=current_user.id).all()
     attempted_exam_ids = [attempt.exam_id for attempt in attempted_exams]
 
-    # Find all exams not yet attempted by the student
     available_exams = Exam.query.filter(~Exam.id.in_(attempted_exam_ids)).order_by(Exam.creation_date.desc()).all()
 
     exams_data = [
@@ -483,7 +478,6 @@ def student_mock_exams():
 @bp.route('/student/past-questions')
 @login_required
 def student_past_questions():
-    # Get a list of all unique subjects for the filter dropdown
     subjects = [s[0] for s in db.session.query(Question.subject).distinct().all()]
 
     selected_subject = request.args.get('subject', '')
@@ -503,7 +497,6 @@ def student_past_questions():
 @bp.route('/student/resources')
 @login_required
 def student_resources():
-    from app.models import Resource
     resources = Resource.query.order_by(Resource.creation_date.desc()).all()
     return render_template('student/resources.html', title='Resources', resources=resources)
 
@@ -539,11 +532,119 @@ def delete_exam(exam_id):
     flash('Exam has been deleted successfully.', 'success')
     return redirect(url_for('main.teacher_exams'))
 
+@bp.route('/teacher/resources', methods=['GET', 'POST'])
+@login_required
+@role_required('teacher', 'admin')
+def manage_resources():
+    if request.method == 'POST':
+        title = request.form.get('title')
+        description = request.form.get('description')
+        subject = request.form.get('subject')
+        resource_type_str = request.form.get('resource_type')
+        resource_type = ResourceType[resource_type_str]
+        link = request.form.get('link')
+        file = request.files.get('file')
+
+        final_link = link
+        if resource_type in [ResourceType.PDF, ResourceType.VIDEO]:
+            if file and file.filename != '':
+                filename = secure_filename(file.filename)
+                upload_folder = os.path.join(current_app.root_path, 'static/uploads')
+                file.save(os.path.join(upload_folder, filename))
+                final_link = url_for('static', filename=f'uploads/{filename}')
+            else:
+                flash('A file is required for this resource type.', 'danger')
+                return redirect(url_for('main.manage_resources'))
+
+        new_resource = Resource(
+            title=title,
+            description=description,
+            subject=subject,
+            resource_type=resource_type,
+            link=final_link,
+            uploaded_by=current_user.id
+        )
+
+        db.session.add(new_resource)
+        db.session.commit()
+        flash('Resource added successfully!', 'success')
+        return redirect(url_for('main.manage_resources'))
+
+    resources = Resource.query.order_by(Resource.creation_date.desc()).all()
+    return render_template('teacher/manage_resources.html', title='Manage Resources', resources=resources)
+
+@bp.route('/teacher/resource/<int:resource_id>/delete', methods=['POST'])
+@login_required
+@role_required('teacher', 'admin')
+def delete_resource(resource_id):
+    resource = Resource.query.get_or_404(resource_id)
+    if resource.uploaded_by != current_user.id and current_user.role != UserRole.ADMIN:
+        abort(403)
+
+    if resource.resource_type in [ResourceType.PDF, ResourceType.VIDEO]:
+        try:
+            filename = os.path.basename(resource.link)
+            file_path = os.path.join(current_app.root_path, 'static/uploads', filename)
+            if os.path.exists(file_path):
+                os.remove(file_path)
+        except Exception as e:
+            flash(f'Error deleting file: {e}', 'danger')
+
+    db.session.delete(resource)
+    db.session.commit()
+    flash('Resource deleted successfully.', 'success')
+    return redirect(url_for('main.manage_resources'))
+
+@bp.route('/teacher/resource/<int:resource_id>/edit', methods=['GET', 'POST'])
+@login_required
+@role_required('teacher', 'admin')
+def edit_resource(resource_id):
+    resource = Resource.query.get_or_404(resource_id)
+    if resource.uploaded_by != current_user.id and current_user.role != UserRole.ADMIN:
+        abort(403)
+
+    if request.method == 'POST':
+        resource.title = request.form.get('title')
+        resource.description = request.form.get('description')
+        resource.subject = request.form.get('subject')
+
+        resource_type_str = request.form.get('resource_type')
+        resource_type = ResourceType[resource_type_str]
+        resource.resource_type = resource_type
+
+        link = request.form.get('link')
+        file = request.files.get('file')
+
+        if resource_type in [ResourceType.PDF, ResourceType.VIDEO]:
+            if file and file.filename != '':
+                # Delete old file if it exists
+                if resource.link and 'uploads' in resource.link:
+                    try:
+                        old_filename = os.path.basename(resource.link)
+                        old_file_path = os.path.join(current_app.root_path, 'static/uploads', old_filename)
+                        if os.path.exists(old_file_path):
+                            os.remove(old_file_path)
+                    except Exception as e:
+                        flash(f'Could not delete old file: {e}', 'warning')
+
+                # Save new file
+                filename = secure_filename(file.filename)
+                upload_folder = os.path.join(current_app.root_path, 'static/uploads')
+                file.save(os.path.join(upload_folder, filename))
+                resource.link = url_for('static', filename=f'uploads/{filename}')
+        else:
+            resource.link = link
+
+        db.session.commit()
+        flash('Resource updated successfully!', 'success')
+        return redirect(url_for('main.manage_resources'))
+
+    return render_template('teacher/edit_resource.html', title='Edit Resource', resource=resource)
+
 @bp.route('/admin/audit-logs')
 @login_required
 @role_required('admin')
 def audit_logs():
-    from app.models import AuditLog
     logs = AuditLog.query.order_by(AuditLog.timestamp.desc()).all()
 
     logs_data = [
