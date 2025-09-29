@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="dashboard-container">
+    <aside class="sidebar">
+        <div class="user-profile">
+            <img src="https://via.placeholder.com/40" alt="User Avatar">
+            <div>
+                <strong>{{ current_user.full_name }}</strong>
+                <small>{{ current_user.role.value.title() }}</small>
+            </div>
+        </div>
+        <nav class="dashboard-nav">
+            <ul>
+                <li><a href="{{ url_for('main.teacher_dashboard') }}">Dashboard</a></li>
+                <li><a href="{{ url_for('main.question_bank') }}">Question Bank</a></li>
+                <li><a href="{{ url_for('main.teacher_exams') }}">Exams</a></li>
+                <li><a href="{{ url_for('main.grading_list') }}">Grading</a></li>
+                <li class="active"><a href="{{ url_for('main.manage_resources') }}">Manage Resources</a></li>
+                <li><a href="{{ url_for('main.settings') }}">Settings</a></li>
+            </ul>
+        </nav>
+        <div class="logout-link">
+            <a href="{{ url_for('auth.logout') }}">Logout</a>
+        </div>
+    </aside>
+    <main class="dashboard-main">
+        <div class="dashboard-header">
+            <h1>Edit Resource</h1>
+            <p>Update the details for the resource: "{{ resource.title }}"</p>
+        </div>
+
+        <div class="content-panel">
+            <form method="POST" action="{{ url_for('main.edit_resource', resource_id=resource.id) }}" enctype="multipart/form-data" class="settings-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="title">Resource Title</label>
+                        <input type="text" id="title" name="title" value="{{ resource.title }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="subject">Subject</label>
+                        <input type="text" id="subject" name="subject" value="{{ resource.subject }}" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <textarea id="description" name="description" rows="3">{{ resource.description }}</textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="resource_type">Resource Type</label>
+                        <select id="resource_type" name="resource_type" required>
+                            <option value="LINK" {% if resource.resource_type.value == 'LINK' %}selected{% endif %}>Link</option>
+                            <option value="PDF" {% if resource.resource_type.value == 'PDF' %}selected{% endif %}>PDF</option>
+                            <option value="VIDEO" {% if resource.resource_type.value == 'VIDEO' %}selected{% endif %}>Video</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="link">Link or File</label>
+                        <input type="text" id="link" name="link" placeholder="https://example.com/resource" value="{{ resource.link if resource.resource_type.value == 'LINK' else '' }}">
+                        <input type="file" id="file" name="file">
+                        <small>Current file: <a href="{{ resource.link }}" target="_blank">{{ resource.link | url_basename }}</a>. Upload a new file to replace it.</small>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <a href="{{ url_for('main.manage_resources') }}" class="button">Cancel</a>
+                    <button type="submit" class="button button-primary">Update Resource</button>
+                </div>
+            </form>
+        </div>
+    </main>
+</div>
+
+<script>
+    const resourceTypeSelect = document.getElementById('resource_type');
+    const linkInput = document.getElementById('link');
+    const fileInput = document.getElementById('file');
+    const fileInfo = document.querySelector('small');
+
+    function toggleInputs() {
+        if (resourceTypeSelect.value === 'LINK') {
+            linkInput.style.display = 'block';
+            linkInput.required = true;
+            fileInput.style.display = 'none';
+            fileInput.required = false;
+            if (fileInfo) fileInfo.style.display = 'none';
+        } else {
+            linkInput.style.display = 'none';
+            linkInput.required = false;
+            fileInput.style.display = 'block';
+            fileInput.required = false; // Not required if not replacing
+            if (fileInfo) fileInfo.style.display = 'block';
+        }
+    }
+    resourceTypeSelect.addEventListener('change', toggleInputs);
+    document.addEventListener('DOMContentLoaded', toggleInputs);
+</script>
+{% endblock %}
