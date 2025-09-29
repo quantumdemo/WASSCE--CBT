@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="dashboard-container">
+    <aside class="sidebar">
+        <div class="user-profile">
+            <img src="https://via.placeholder.com/40" alt="User Avatar">
+            <div>
+                <strong>{{ current_user.full_name }}</strong>
+                <small>{{ current_user.role.value.title() }}</small>
+            </div>
+        </div>
+        <nav class="dashboard-nav">
+            <ul>
+                <li><a href="{{ url_for('main.dashboard') }}">Dashboard</a></li>
+                <li class="active"><a href="{{ url_for('main.student_practice') }}">Practice View</a></li>
+                <li><a href="{{ url_for('main.student_mock_exams') }}">Mock Exams</a></li>
+                <li><a href="{{ url_for('main.student_past_questions') }}">Past Questions</a></li>
+                <li><a href="{{ url_for('main.student_resources') }}">Resources</a></li>
+                <li><a href="{{ url_for('main.settings') }}">Settings</a></li>
+            </ul>
+        </nav>
+        <div class="logout-link">
+            <a href="{{ url_for('auth.logout') }}">Logout</a>
+        </div>
+    </aside>
+    <main class="dashboard-main">
+        <div class="dashboard-header">
+            <h1>Practice Session Setup</h1>
+            <p>Customize your practice session to focus on specific areas.</p>
+        </div>
+
+        <div class="content-panel">
+            <form method="POST" action="{{ url_for('main.student_practice') }}" class="settings-form">
+                <div class="form-group">
+                    <label for="subject">Choose a Subject</label>
+                    <select id="subject" name="subject" required>
+                        <option value="">Select a Subject</option>
+                        {% for subject in subjects %}
+                            <option value="{{ subject }}">{{ subject }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="num_questions">Number of Questions</label>
+                    <input type="number" id="num_questions" name="num_questions" min="1" max="50" value="10" required>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="button button-primary">Start Practice</button>
+                </div>
+            </form>
+        </div>
+    </main>
+</div>
+{% endblock %}

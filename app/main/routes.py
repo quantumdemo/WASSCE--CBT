@@ -1,4 +1,4 @@
-from flask import render_template, request, abort
+from flask import render_template, request, abort, flash, redirect, url_for
 from flask_login import login_required, current_user
 from app.main import bp
 from app.decorators import role_required
@@ -15,7 +15,6 @@ def index():
 @bp.route('/dashboard')
 @login_required
 def dashboard():
-    # --- Real Database Queries ---
     exam_history_query = db.session.query(
         ExamAttempt, Exam
     ).join(Exam, ExamAttempt.exam_id == Exam.id)\
@@ -198,6 +197,16 @@ def add_user():
         )
         user.set_password(password)
         db.session.add(user)
+
+        # Log the action
+        from app.models import AuditLog
+        log = AuditLog(
+            user_id=current_user.id,
+            action='Create User',
+            details=f'New user created: {email} (Role: {role_str})'
+        )
+        db.session.add(log)
+
         db.session.commit()
         flash('User created successfully!', 'success')
         return redirect(url_for('main.user_management'))
@@ -280,7 +289,6 @@ def exam_builder():
 @login_required
 @role_required('teacher')
 def grading_list():
-    # Find attempts for exams created by the current teacher that need grading
     attempts_to_grade = ExamAttempt.query.join(Exam).filter(
         Exam.created_by == current_user.id,
         ExamAttempt.score.is_(None),
@@ -358,39 +366,145 @@ def exam(exam_id):
 def results():
     return render_template('placeholder.html', title='Results')
 
-@bp.route('/settings')
+@bp.route('/settings', methods=['GET', 'POST'])
 @login_required
 def settings():
-    return render_template('placeholder.html', title='Settings')
+    if request.method == 'POST':
+        if request.form.get('form_type') == 'profile':
+            user = User.query.get(current_user.id)
+            user.full_name = request.form.get('full_name')
+            user.email = request.form.get('email')
+            db.session.commit()
+            flash('Your profile has been updated successfully.', 'success')
+        elif request.form.get('form_type') == 'password':
+            user = User.query.get(current_user.id)
+            if not user.check_password(request.form.get('current_password')):
+                flash('Incorrect current password.', 'danger')
+            elif request.form.get('new_password') != request.form.get('confirm_password'):
+                flash('New passwords do not match.', 'danger')
+            else:
+                user.set_password(request.form.get('new_password'))
+                db.session.commit()
+                flash('Your password has been changed successfully.', 'success')
+        return redirect(url_for('main.settings'))
+    return render_template('settings.html', title='Settings')
 
-@bp.route('/student/practice')
+@bp.route('/student/practice', methods=['GET', 'POST'])
 @login_required
 def student_practice():
-    return render_template('placeholder.html', title='Practice View')
+    if request.method == 'POST':
+        subject = request.form.get('subject')
+        num_questions = int(request.form.get('num_questions'))
+
+        # Fetch random questions for the selected subject
+        questions = Question.query.filter_by(subject=subject).order_by(func.random()).limit(num_questions).all()
+
+        if len(questions) < num_questions:
+            flash(f'Not enough questions available for {subject}. Please try a smaller number.', 'warning')
+            return redirect(url_for('main.student_practice'))
+
+        # Create a new exam for the practice session
+        practice_exam = Exam(
+            title=f"Practice Session: {subject}",
+            subject=subject,
+            duration_minutes=int(num_questions * 1.5),
+            created_by=current_user.id  # The user "creates" their own practice exam
+        )
+        practice_exam.questions.extend(questions)
+
+        db.session.add(practice_exam)
+        db.session.commit()
+
+        flash('Your practice session is ready. Good luck!', 'success')
+        return redirect(url_for('main.exam', exam_id=practice_exam.id))
+
+    # For GET request, get all unique subjects
+    subjects = [s[0] for s in db.session.query(Question.subject).distinct().all()]
+    return render_template('student/practice_view.html', title='Practice View', subjects=subjects)
 
 @bp.route('/student/mock-exams')
 @login_required
 def student_mock_exams():
-    return render_template('placeholder.html', title='Mock Exams')
+    # Find exams the user has already attempted
+    attempted_exams = ExamAttempt.query.filter_by(user_id=current_user.id).all()
+    attempted_exam_ids = [attempt.exam_id for attempt in attempted_exams]
+
+    # Find all exams not yet attempted by the student
+    available_exams = Exam.query.filter(~Exam.id.in_(attempted_exam_ids)).order_by(Exam.creation_date.desc()).all()
+
+    exams_data = [
+        {
+            'id': exam.id,
+            'title': exam.title,
+            'subject': exam.subject,
+            'question_count': len(exam.questions)
+        }
+        for exam in available_exams
+    ]
+
+    return render_template('student/mock_exams.html', title='Mock Exams', exams=exams_data)
 
 @bp.route('/student/past-questions')
 @login_required
 def student_past_questions():
-    return render_template('placeholder.html', title='Past Questions')
+    # Get a list of all unique subjects for the filter dropdown
+    subjects = [s[0] for s in db.session.query(Question.subject).distinct().all()]
+
+    selected_subject = request.args.get('subject', '')
+
+    query = Question.query
+    if selected_subject:
+        query = query.filter_by(subject=selected_subject)
+
+    questions = query.order_by(Question.subject, Question.id).all()
+
+    return render_template('student/past_questions.html',
+                           title='Past Questions',
+                           questions=questions,
+                           subjects=subjects,
+                           selected_subject=selected_subject)
 
 @bp.route('/student/resources')
 @login_required
 def student_resources():
-    return render_template('placeholder.html', title='Resources')
+    from app.models import Resource
+    resources = Resource.query.order_by(Resource.creation_date.desc()).all()
+    return render_template('student/resources.html', title='Resources', resources=resources)
 
 @bp.route('/teacher/exams')
 @login_required
 @role_required('teacher')
 def teacher_exams():
-    return render_template('placeholder.html', title='Manage Exams')
+    exams = Exam.query.filter_by(created_by=current_user.id).order_by(Exam.creation_date.desc()).all()
+
+    exams_data = []
+    for exam in exams:
+        exams_data.append({
+            'id': exam.id,
+            'title': exam.title,
+            'subject': exam.subject,
+            'question_count': len(exam.questions),
+            'creation_date': exam.creation_date
+        })
+
+    return render_template('teacher/manage_exams.html', title='Manage Exams', exams=exams_data)
 
 @bp.route('/admin/audit-logs')
 @login_required
 @role_required('admin')
 def audit_logs():
-    return render_template('placeholder.html', title='Audit Logs')
+    from app.models import AuditLog
+    logs = AuditLog.query.order_by(AuditLog.timestamp.desc()).all()
+
+    logs_data = [
+        {
+            'timestamp': log.timestamp,
+            'user_name': log.user.full_name,
+            'user_email': log.user.email,
+            'action': log.action,
+            'details': log.details
+        }
+        for log in logs
+    ]
+
+    return render_template('admin/audit_logs.html', title='Audit Logs', logs=logs_data)

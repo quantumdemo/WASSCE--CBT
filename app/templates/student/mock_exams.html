@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="dashboard-container">
+    <aside class="sidebar">
+        <div class="user-profile">
+            <img src="https://via.placeholder.com/40" alt="User Avatar">
+            <div>
+                <strong>{{ current_user.full_name }}</strong>
+                <small>{{ current_user.role.value.title() }}</small>
+            </div>
+        </div>
+        <nav class="dashboard-nav">
+            <ul>
+                <li><a href="{{ url_for('main.dashboard') }}">Dashboard</a></li>
+                <li><a href="{{ url_for('main.student_practice') }}">Practice View</a></li>
+                <li class="active"><a href="{{ url_for('main.student_mock_exams') }}">Mock Exams</a></li>
+                <li><a href="{{ url_for('main.student_past_questions') }}">Past Questions</a></li>
+                <li><a href="{{ url_for('main.student_resources') }}">Resources</a></li>
+                <li><a href="{{ url_for('main.settings') }}">Settings</a></li>
+            </ul>
+        </nav>
+        <div class="logout-link">
+            <a href="{{ url_for('auth.logout') }}">Logout</a>
+        </div>
+    </aside>
+    <main class="dashboard-main">
+        <div class="dashboard-header">
+            <h1>Mock Exams</h1>
+            <p>Choose from the available exams to test your knowledge.</p>
+        </div>
+
+        <div class="exam-list">
+            {% for exam in exams %}
+            <div class="exam-card">
+                <div class="exam-details">
+                    <h3>{{ exam.title }}</h3>
+                    <p class="subject">{{ exam.subject }}</p>
+                    <p class="questions">{{ exam.question_count }} questions</p>
+                </div>
+                <div class="exam-actions">
+                    <a href="{{ url_for('main.exam', exam_id=exam.id) }}" class="button button-primary">Start Exam</a>
+                </div>
+            </div>
+            {% else %}
+            <div class="content-panel" style="text-align: center; padding: 40px;">
+                <p>There are no new mock exams available at the moment. Please check back later!</p>
+            </div>
+            {% endfor %}
+        </div>
+    </main>
+</div>
+{% endblock %}

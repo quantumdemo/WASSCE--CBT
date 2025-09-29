@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="dashboard-container">
+    <aside class="sidebar">
+        <div class="user-profile">
+            <img src="https://via.placeholder.com/40" alt="User Avatar">
+            <div>
+                <strong>{{ current_user.full_name }}</strong>
+                <small>{{ current_user.role.value.title() }}</small>
+            </div>
+        </div>
+        <nav class="dashboard-nav">
+            <ul>
+                <li><a href="{{ url_for('main.admin_dashboard') }}">Dashboard</a></li>
+                <li><a href="{{ url_for('main.user_management') }}">User Management</a></li>
+                <li><a href="{{ url_for('main.centre_management') }}">Centre Management</a></li>
+                <li><a href="{{ url_for('main.settings') }}">System Settings</a></li>
+                <li class="active"><a href="{{ url_for('main.audit_logs') }}">Audit Logs</a></li>
+            </ul>
+        </nav>
+        <div class="logout-link">
+            <a href="{{ url_for('auth.logout') }}">Logout</a>
+        </div>
+    </aside>
+    <main class="dashboard-main">
+        <div class="dashboard-header">
+            <h1>Audit Logs</h1>
+            <p>Review important actions taken by users across the system.</p>
+        </div>
+
+        <div class="content-panel">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Timestamp</th>
+                        <th>User</th>
+                        <th>Action</th>
+                        <th>Details</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in logs %}
+                    <tr>
+                        <td>{{ log.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                        <td>{{ log.user_name }} ({{ log.user_email }})</td>
+                        <td>{{ log.action }}</td>
+                        <td>{{ log.details or 'N/A' }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="4" style="text-align: center; padding: 20px;">There are no audit logs to display.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </main>
+</div>
+{% endblock %}
